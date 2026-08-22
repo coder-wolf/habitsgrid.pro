@@ -549,7 +549,7 @@ function SectionRows({
         style={sectionStyle}
         className={`border-y border-grid-line bg-secondary group/section ${sectionDragging ? "relative z-50" : ""}`}
       >
-        <td colSpan={span} className="sticky left-0 z-10 bg-secondary px-4 py-2">
+        <td className="sticky left-0 z-10 w-[240px] bg-secondary px-4 py-2">
           <div className="flex items-center gap-1">
             <button
               {...sectionAttributes}
@@ -610,6 +610,7 @@ function SectionRows({
             </Popover>
           </div>
         </td>
+        <td colSpan={span - 1} className="bg-secondary" />
       </tr>
 
       {!section.collapsed && (
