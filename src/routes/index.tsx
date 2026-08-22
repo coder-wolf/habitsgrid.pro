@@ -759,9 +759,7 @@ function SortableHabitRow({
   useEffect(() => {
     if (!openColor) return;
     const close = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest("[data-color-picker]") || colorBtnRef.current?.contains(target)) return;
-      setOpenColor(false);
+      if (!(e.target as HTMLElement).closest("[data-color-picker]")) setOpenColor(false);
     };
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
