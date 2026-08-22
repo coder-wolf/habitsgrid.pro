@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -138,6 +138,30 @@ function Index() {
       ...prev,
       sections: prev.sections.map((s) =>
         s.id === sectionId ? { ...s, habits: s.habits.filter((h) => h.id !== habitId) } : s,
+      ),
+    }));
+  };
+
+  const renameHabit = (sectionId: string, habitId: string, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setState((prev) => ({
+      ...prev,
+      sections: prev.sections.map((s) =>
+        s.id === sectionId
+          ? { ...s, habits: s.habits.map((h) => (h.id === habitId ? { ...h, name: trimmed } : h)) }
+          : s,
+      ),
+    }));
+  };
+
+  const recolorHabit = (sectionId: string, habitId: string, color: Habit["color"]) => {
+    setState((prev) => ({
+      ...prev,
+      sections: prev.sections.map((s) =>
+        s.id === sectionId
+          ? { ...s, habits: s.habits.map((h) => (h.id === habitId ? { ...h, color } : h)) }
+          : s,
       ),
     }));
   };
@@ -286,6 +310,8 @@ function Index() {
                     totalCount={totalCount}
                     onToggle={toggle}
                     onRemove={removeHabit}
+                    onRename={renameHabit}
+                    onRecolor={recolorHabit}
                     adding={adding === section.id}
                     draft={draft}
                     setDraft={setDraft}
@@ -321,6 +347,8 @@ type SectionRowsProps = {
   totalCount: (h: Habit) => number;
   onToggle: (habitId: string, day: number) => void;
   onRemove: (sectionId: string, habitId: string) => void;
+  onRename: (sectionId: string, habitId: string, name: string) => void;
+  onRecolor: (sectionId: string, habitId: string, color: Habit["color"]) => void;
   adding: boolean;
   draft: string;
   setDraft: (v: string) => void;
@@ -340,6 +368,8 @@ function SectionRows({
   totalCount,
   onToggle,
   onRemove,
+  onRename,
+  onRecolor,
   adding,
   draft,
   setDraft,
@@ -374,6 +404,8 @@ function SectionRows({
           totalCount={totalCount}
           onToggle={onToggle}
           onRemove={onRemove}
+          onRename={onRename}
+          onRecolor={onRecolor}
         />
       ))}
 
@@ -419,6 +451,8 @@ type SortableHabitRowProps = {
   totalCount: (h: Habit) => number;
   onToggle: (habitId: string, day: number) => void;
   onRemove: (sectionId: string, habitId: string) => void;
+  onRename: (sectionId: string, habitId: string, name: string) => void;
+  onRecolor: (sectionId: string, habitId: string, color: Habit["color"]) => void;
 };
 
 function SortableHabitRow({
@@ -433,7 +467,26 @@ function SortableHabitRow({
   totalCount,
   onToggle,
   onRemove,
+  onRename,
+  onRecolor,
 }: SortableHabitRowProps) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(habit.name);
+  const [openColor, setOpenColor] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) inputRef.current?.focus();
+  }, [editing]);
+
+  useEffect(() => {
+    if (!openColor) return;
+    const close = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest("[data-color-picker]")) setOpenColor(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [openColor]);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: habit.id,
   });
@@ -465,8 +518,67 @@ function SortableHabitRow({
           >
             <GripVertical className="size-3.5" />
           </button>
-          <span className={`size-2 shrink-0 rounded-sm ${habitColorClass[habit.color]}`} />
-          <span className="truncate text-[13px]">{habit.name}</span>
+          <div className="relative">
+            <button
+              onClick={() => setOpenColor(!openColor)}
+              className={`size-2 shrink-0 rounded-sm ${habitColorClass[habit.color]} cursor-pointer ring-1 ring-transparent transition-shadow hover:ring-foreground/30`}
+              aria-label={`Change color for ${habit.name}`}
+            />
+            {openColor && (
+              <div
+                data-color-picker
+                className="absolute left-0 top-4 z-50 flex gap-1 rounded-md border border-border bg-popover p-1.5 shadow-md"
+              >
+                {([1, 2, 3, 4, 5, 6] as Habit["color"][]).map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => {
+                      onRecolor(sectionId, habit.id, c);
+                      setOpenColor(false);
+                    }}
+                    className={`size-4 rounded-sm ${habitColorClass[c]} ${
+                      c === habit.color
+                        ? "ring-2 ring-foreground ring-offset-1 ring-offset-popover"
+                        : "hover:scale-125"
+                    } transition-transform`}
+                    aria-label={`Color ${c}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+          {editing ? (
+            <input
+              ref={inputRef}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onBlur={() => {
+                onRename(sectionId, habit.id, draft);
+                setEditing(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  onRename(sectionId, habit.id, draft);
+                  setEditing(false);
+                }
+                if (e.key === "Escape") {
+                  setDraft(habit.name);
+                  setEditing(false);
+                }
+              }}
+              className="min-w-0 flex-1 rounded border border-input bg-background px-1 py-0 text-[13px] outline-none focus:border-ring"
+            />
+          ) : (
+            <span
+              onClick={() => {
+                setDraft(habit.name);
+                setEditing(true);
+              }}
+              className="truncate text-[13px] cursor-text"
+            >
+              {habit.name}
+            </span>
+          )}
           <button
             onClick={() => onRemove(sectionId, habit.id)}
             aria-label={`Delete ${habit.name}`}
