@@ -60,6 +60,84 @@ export const Route = createFileRoute("/")({
 
 type State = { sections: Section[]; completions: Completions };
 
+function InlineEdit({
+  value,
+  onCommit,
+  className,
+  placeholder,
+}: {
+  value: string;
+  onCommit: (v: string) => void;
+  className?: string;
+  placeholder?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const mirrorRef = useRef<HTMLSpanElement>(null);
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    if (editing && mirrorRef.current) {
+      setWidth(mirrorRef.current.offsetWidth);
+      inputRef.current?.focus();
+    }
+  }, [editing]);
+
+  if (!editing) {
+    return (
+      <span
+        onClick={() => {
+          setDraft(value);
+          setEditing(true);
+        }}
+        className={`${className ?? ""} cursor-text`}
+      >
+        {value}
+      </span>
+    );
+  }
+
+  return (
+    <>
+      <span
+        ref={mirrorRef}
+        className={`${className ?? ""} pointer-events-none absolute whitespace-pre opacity-0`}
+        aria-hidden
+      >
+        {draft || placeholder || " "}
+      </span>
+      <input
+        ref={inputRef}
+        value={draft}
+        onChange={(e) => {
+          setDraft(e.target.value);
+          requestAnimationFrame(() => {
+            if (mirrorRef.current) setWidth(mirrorRef.current.offsetWidth);
+          });
+        }}
+        onBlur={() => {
+          onCommit(draft);
+          setEditing(false);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onCommit(draft);
+            setEditing(false);
+          }
+          if (e.key === "Escape") {
+            setDraft(value);
+            setEditing(false);
+          }
+        }}
+        placeholder={placeholder}
+        style={{ width }}
+        className={`${className ?? ""} bg-transparent border-none outline-none p-0 m-0`}
+      />
+    </>
+  );
+}
+
 function Index() {
   const today = useMemo(() => new Date(), []);
   const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
@@ -448,9 +526,6 @@ function SectionRows({
 }: SectionRowsProps) {
   const span = days.length + 4;
   const habitIds = section.habits.map((h) => h.id);
-  const [editingName, setEditingName] = useState(false);
-  const [nameDraft, setNameDraft] = useState(section.name);
-  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const {
     attributes: sectionAttributes,
@@ -466,10 +541,6 @@ function SectionRows({
     transition: sectionTransition,
     opacity: sectionDragging ? 0.4 : undefined,
   };
-
-  useEffect(() => {
-    if (editingName) nameInputRef.current?.focus();
-  }, [editingName]);
 
   return (
     <>
@@ -499,38 +570,11 @@ function SectionRows({
                 <ChevronDown className="size-3.5" />
               )}
             </button>
-            {editingName ? (
-              <input
-                ref={nameInputRef}
-                value={nameDraft}
-                onChange={(e) => setNameDraft(e.target.value)}
-                onBlur={() => {
-                  onRenameSection(section.id, nameDraft);
-                  setEditingName(false);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    onRenameSection(section.id, nameDraft);
-                    setEditingName(false);
-                  }
-                  if (e.key === "Escape") {
-                    setNameDraft(section.name);
-                    setEditingName(false);
-                  }
-                }}
-                className="min-w-0 flex-1 rounded border border-input bg-background px-1 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] outline-none focus:border-ring"
-              />
-            ) : (
-              <span
-                onClick={() => {
-                  setNameDraft(section.name);
-                  setEditingName(true);
-                }}
-                className="flex-1 cursor-text font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
-              >
-                {section.name}
-              </span>
-            )}
+            <InlineEdit
+              value={section.name}
+              onCommit={(v) => onRenameSection(section.id, v)}
+              className="flex-1 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+            />
             <span className="font-mono text-[10px] text-muted-foreground/60">
               {section.habits.length}
             </span>
@@ -605,7 +649,7 @@ function SectionRows({
                   if (e.key === "Escape") onCancelAdd();
                 }}
                 placeholder="Habit name…"
-                className="w-full rounded border border-input bg-background px-2 py-1 text-[13px] outline-none focus:border-ring"
+                className="bg-transparent border-none outline-none p-0 m-0 text-[13px] text-muted-foreground"
               />
             ) : (
               <button
@@ -655,7 +699,7 @@ function AddGroupRow({ onAdd }: { onAdd: (name: string) => void }) {
               }
             }}
             placeholder="Group name…"
-            className="w-48 rounded border border-input bg-background px-2 py-1 text-[13px] outline-none focus:border-ring"
+            className="bg-transparent border-none outline-none p-0 m-0 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
           />
         ) : (
           <button
@@ -701,16 +745,9 @@ function SortableHabitRow({
   onRename,
   onRecolor,
 }: SortableHabitRowProps) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(habit.name);
   const [openColor, setOpenColor] = useState(false);
   const [colorPos, setColorPos] = useState({ x: 0, y: 0 });
-  const inputRef = useRef<HTMLInputElement>(null);
   const colorBtnRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (editing) inputRef.current?.focus();
-  }, [editing]);
 
   useEffect(() => {
     if (!openColor) return;
@@ -790,38 +827,11 @@ function SortableHabitRow({
                 document.body,
               )}
           </div>
-          {editing ? (
-            <input
-              ref={inputRef}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onBlur={() => {
-                onRename(sectionId, habit.id, draft);
-                setEditing(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  onRename(sectionId, habit.id, draft);
-                  setEditing(false);
-                }
-                if (e.key === "Escape") {
-                  setDraft(habit.name);
-                  setEditing(false);
-                }
-              }}
-              className="min-w-0 flex-1 rounded border border-input bg-background px-1 py-0 text-[13px] outline-none focus:border-ring"
-            />
-          ) : (
-            <span
-              onClick={() => {
-                setDraft(habit.name);
-                setEditing(true);
-              }}
-              className="truncate text-[13px] cursor-text"
-            >
-              {habit.name}
-            </span>
-          )}
+          <InlineEdit
+            value={habit.name}
+            onCommit={(v) => onRename(sectionId, habit.id, v)}
+            className="truncate text-[13px]"
+          />
           <Popover>
             <PopoverTrigger asChild>
               <button
