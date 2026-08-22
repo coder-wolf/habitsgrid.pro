@@ -18,7 +18,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical } from "lucide-react";
+import { GripVertical, ChevronRight, ChevronDown } from "lucide-react";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   cellKey,
@@ -27,6 +27,7 @@ import {
   habitColorClass,
   habitTextClass,
   makeHabit,
+  makeSection,
   monthKey,
   weekdayLabel,
   STORAGE_KEY,
@@ -168,12 +169,63 @@ function Index() {
     }));
   };
 
+  const addSection = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setState((prev) => ({
+      ...prev,
+      sections: [...prev.sections, makeSection(trimmed)],
+    }));
+  };
+
+  const removeSection = (sectionId: string) => {
+    setState((prev) => ({
+      ...prev,
+      sections: prev.sections.filter((s) => s.id !== sectionId),
+    }));
+  };
+
+  const renameSection = (sectionId: string, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setState((prev) => ({
+      ...prev,
+      sections: prev.sections.map((s) => (s.id === sectionId ? { ...s, name: trimmed } : s)),
+    }));
+  };
+
+  const toggleSection = (sectionId: string) => {
+    setState((prev) => ({
+      ...prev,
+      sections: prev.sections.map((s) =>
+        s.id === sectionId ? { ...s, collapsed: !s.collapsed } : s,
+      ),
+    }));
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const sourceSection = state.sections.find((s) => s.habits.some((h) => h.id === active.id));
-    const destSection = state.sections.find((s) => s.habits.some((h) => h.id === over.id));
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    const activeIsSection = state.sections.some((s) => s.id === activeId);
+    const overIsSection = state.sections.some((s) => s.id === overId);
+
+    if (activeIsSection && overIsSection) {
+      setState((prev) => {
+        const oldIndex = prev.sections.findIndex((s) => s.id === activeId);
+        const newIndex = prev.sections.findIndex((s) => s.id === overId);
+        return { ...prev, sections: arrayMove(prev.sections, oldIndex, newIndex) };
+      });
+      return;
+    }
+
+    if (activeIsSection || overIsSection) return;
+
+    const sourceSection = state.sections.find((s) => s.habits.some((h) => h.id === activeId));
+    const destSection = state.sections.find((s) => s.habits.some((h) => h.id === overId));
 
     if (!sourceSection || !destSection) return;
 
@@ -183,8 +235,8 @@ function Index() {
           ...prev,
           sections: prev.sections.map((s) => {
             if (s.id !== sourceSection.id) return s;
-            const oldIndex = s.habits.findIndex((h) => h.id === active.id);
-            const newIndex = s.habits.findIndex((h) => h.id === over.id);
+            const oldIndex = s.habits.findIndex((h) => h.id === activeId);
+            const newIndex = s.habits.findIndex((h) => h.id === overId);
             return { ...s, habits: arrayMove(s.habits, oldIndex, newIndex) };
           }),
         };
@@ -192,14 +244,14 @@ function Index() {
 
       const source = prev.sections.find((s) => s.id === sourceSection.id)!;
       const dest = prev.sections.find((s) => s.id === destSection.id)!;
-      const activeHabit = source.habits.find((h) => h.id === active.id)!;
-      const overIndex = dest.habits.findIndex((h) => h.id === over.id);
+      const activeHabit = source.habits.find((h) => h.id === activeId)!;
+      const overIndex = dest.habits.findIndex((h) => h.id === overId);
 
       return {
         ...prev,
         sections: prev.sections.map((s) => {
           if (s.id === sourceSection.id) {
-            return { ...s, habits: s.habits.filter((h) => h.id !== active.id) };
+            return { ...s, habits: s.habits.filter((h) => h.id !== activeId) };
           }
           if (s.id === destSection.id) {
             const newHabits = [...dest.habits];
@@ -299,39 +351,48 @@ function Index() {
                 </tr>
               </thead>
               <tbody>
-                {state.sections.map((section) => (
-                  <SectionRows
-                    key={section.id}
-                    section={section}
-                    days={days}
-                    month={month}
-                    today={today}
-                    isCurrentMonth={isCurrentMonth}
-                    completions={state.completions}
-                    monthCount={monthCount}
-                    totalCount={totalCount}
-                    onToggle={toggle}
-                    onRemove={removeHabit}
-                    onRename={renameHabit}
-                    onRecolor={recolorHabit}
-                    adding={adding === section.id}
-                    draft={draft}
-                    setDraft={setDraft}
-                    onStartAdd={() => {
-                      setAdding(section.id);
-                      setDraft("");
-                    }}
-                    onCancelAdd={() => setAdding(null)}
-                    onCommitAdd={() => addHabit(section.id)}
-                  />
-                ))}
+                <SortableContext
+                  items={state.sections.map((s) => s.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {state.sections.map((section) => (
+                    <SectionRows
+                      key={section.id}
+                      section={section}
+                      days={days}
+                      month={month}
+                      today={today}
+                      isCurrentMonth={isCurrentMonth}
+                      completions={state.completions}
+                      monthCount={monthCount}
+                      totalCount={totalCount}
+                      onToggle={toggle}
+                      onRemove={removeHabit}
+                      onRename={renameHabit}
+                      onRecolor={recolorHabit}
+                      onToggleSection={toggleSection}
+                      onRenameSection={renameSection}
+                      onRemoveSection={removeSection}
+                      adding={adding === section.id}
+                      draft={draft}
+                      setDraft={setDraft}
+                      onStartAdd={() => {
+                        setAdding(section.id);
+                        setDraft("");
+                      }}
+                      onCancelAdd={() => setAdding(null)}
+                      onCommitAdd={() => addHabit(section.id)}
+                    />
+                  ))}
+                </SortableContext>
+                <AddGroupRow onAdd={addSection} />
               </tbody>
             </table>
           </div>
         </DndContext>
 
         <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-          Drag to reorder habits · Click any cell to tick a day · saved on this device
+          Drag to reorder · Click cells to tick · Click group names to rename · saved on this device
         </p>
       </div>
     </div>
@@ -351,6 +412,9 @@ type SectionRowsProps = {
   onRemove: (sectionId: string, habitId: string) => void;
   onRename: (sectionId: string, habitId: string, name: string) => void;
   onRecolor: (sectionId: string, habitId: string, color: Habit["color"]) => void;
+  onToggleSection: (sectionId: string) => void;
+  onRenameSection: (sectionId: string, name: string) => void;
+  onRemoveSection: (sectionId: string) => void;
   adding: boolean;
   draft: string;
   setDraft: (v: string) => void;
@@ -372,6 +436,9 @@ function SectionRows({
   onRemove,
   onRename,
   onRecolor,
+  onToggleSection,
+  onRenameSection,
+  onRemoveSection,
   adding,
   draft,
   setDraft,
@@ -381,63 +448,225 @@ function SectionRows({
 }: SectionRowsProps) {
   const span = days.length + 4;
   const habitIds = section.habits.map((h) => h.id);
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState(section.name);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    attributes: sectionAttributes,
+    listeners: sectionListeners,
+    setNodeRef: setSectionNodeRef,
+    transform: sectionTransform,
+    transition: sectionTransition,
+    isDragging: sectionDragging,
+  } = useSortable({ id: section.id });
+
+  const sectionStyle = {
+    transform: CSS.Transform.toString(sectionTransform),
+    transition: sectionTransition,
+    opacity: sectionDragging ? 0.4 : undefined,
+  };
+
+  useEffect(() => {
+    if (editingName) nameInputRef.current?.focus();
+  }, [editingName]);
 
   return (
-    <SortableContext items={habitIds} strategy={verticalListSortingStrategy}>
-      <tr className="border-y border-grid-line bg-secondary">
+    <>
+      <tr
+        ref={setSectionNodeRef}
+        style={sectionStyle}
+        className={`border-y border-grid-line bg-secondary group/section ${sectionDragging ? "relative z-50" : ""}`}
+      >
         <td colSpan={span} className="px-4 py-2">
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            {section.name}
-          </span>
-        </td>
-      </tr>
-
-      {section.habits.map((habit) => (
-        <SortableHabitRow
-          key={habit.id}
-          habit={habit}
-          sectionId={section.id}
-          days={days}
-          month={month}
-          today={today}
-          isCurrentMonth={isCurrentMonth}
-          completions={completions}
-          monthCount={monthCount}
-          totalCount={totalCount}
-          onToggle={onToggle}
-          onRemove={onRemove}
-          onRename={onRename}
-          onRecolor={onRecolor}
-        />
-      ))}
-
-      <tr className="border-b border-grid-line">
-        <td className="sticky left-0 z-10 bg-surface px-4 py-1.5">
-          {adding ? (
-            <input
-              autoFocus
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onBlur={onCommitAdd}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") onCommitAdd();
-                if (e.key === "Escape") onCancelAdd();
-              }}
-              placeholder="Habit name…"
-              className="w-full rounded border border-input bg-background px-2 py-1 text-[13px] outline-none focus:border-ring"
-            />
-          ) : (
+          <div className="flex items-center gap-1">
             <button
-              onClick={onStartAdd}
-              className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+              {...sectionAttributes}
+              {...sectionListeners}
+              className="shrink-0 rounded p-0.5 text-muted-foreground/50 hover:text-foreground active:cursor-grabbing"
+              aria-label={`Drag group ${section.name}`}
             >
-              + Add habit
+              <GripVertical className="size-3.5" />
             </button>
-          )}
+            <button
+              onClick={() => onToggleSection(section.id)}
+              className="shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+              aria-label={section.collapsed ? `Expand ${section.name}` : `Collapse ${section.name}`}
+            >
+              {section.collapsed ? (
+                <ChevronRight className="size-3.5" />
+              ) : (
+                <ChevronDown className="size-3.5" />
+              )}
+            </button>
+            {editingName ? (
+              <input
+                ref={nameInputRef}
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onBlur={() => {
+                  onRenameSection(section.id, nameDraft);
+                  setEditingName(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    onRenameSection(section.id, nameDraft);
+                    setEditingName(false);
+                  }
+                  if (e.key === "Escape") {
+                    setNameDraft(section.name);
+                    setEditingName(false);
+                  }
+                }}
+                className="min-w-0 flex-1 rounded border border-input bg-background px-1 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] outline-none focus:border-ring"
+              />
+            ) : (
+              <span
+                onClick={() => {
+                  setNameDraft(section.name);
+                  setEditingName(true);
+                }}
+                className="flex-1 cursor-text font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+              >
+                {section.name}
+              </span>
+            )}
+            <span className="font-mono text-[10px] text-muted-foreground/60">
+              {section.habits.length}
+            </span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  aria-label={`Delete group ${section.name}`}
+                  className="ml-1 rounded px-1 font-mono text-xs text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover/section:opacity-100"
+                >
+                  ×
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="start" side="bottom" sideOffset={4} className="w-auto p-3">
+                <p className="text-xs text-foreground">Delete group "{section.name}"?</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  {section.habits.length} habit{section.habits.length !== 1 ? "s" : ""} will be
+                  removed
+                </p>
+                <div className="mt-2 flex gap-1">
+                  <button
+                    onClick={() => onRemoveSection(section.id)}
+                    className="rounded bg-destructive px-2 py-0.5 text-[11px] font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
+                  >
+                    Delete
+                  </button>
+                  <PopoverClose asChild>
+                    <button className="rounded px-2 py-0.5 text-[11px] text-muted-foreground transition-colors hover:bg-secondary">
+                      Cancel
+                    </button>
+                  </PopoverClose>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </td>
-        <td colSpan={days.length + 3} className="bg-cell/30" />
       </tr>
-    </SortableContext>
+
+      {!section.collapsed && (
+        <SortableContext items={habitIds} strategy={verticalListSortingStrategy}>
+          {section.habits.map((habit) => (
+            <SortableHabitRow
+              key={habit.id}
+              habit={habit}
+              sectionId={section.id}
+              days={days}
+              month={month}
+              today={today}
+              isCurrentMonth={isCurrentMonth}
+              completions={completions}
+              monthCount={monthCount}
+              totalCount={totalCount}
+              onToggle={onToggle}
+              onRemove={onRemove}
+              onRename={onRename}
+              onRecolor={onRecolor}
+            />
+          ))}
+        </SortableContext>
+      )}
+
+      {!section.collapsed && (
+        <tr className="border-b border-grid-line">
+          <td className="sticky left-0 z-10 bg-surface px-4 py-1.5">
+            {adding ? (
+              <input
+                autoFocus
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onBlur={onCommitAdd}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") onCommitAdd();
+                  if (e.key === "Escape") onCancelAdd();
+                }}
+                placeholder="Habit name…"
+                className="w-full rounded border border-input bg-background px-2 py-1 text-[13px] outline-none focus:border-ring"
+              />
+            ) : (
+              <button
+                onClick={onStartAdd}
+                className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                + Add habit
+              </button>
+            )}
+          </td>
+          <td colSpan={days.length + 3} className="bg-cell/30" />
+        </tr>
+      )}
+    </>
+  );
+}
+
+function AddGroupRow({ onAdd }: { onAdd: (name: string) => void }) {
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (adding) inputRef.current?.focus();
+  }, [adding]);
+
+  const commit = () => {
+    onAdd(draft);
+    setDraft("");
+    setAdding(false);
+  };
+
+  return (
+    <tr className="border-t border-grid-line">
+      <td colSpan={100} className="px-4 py-2">
+        {adding ? (
+          <input
+            ref={inputRef}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commit();
+              if (e.key === "Escape") {
+                setDraft("");
+                setAdding(false);
+              }
+            }}
+            placeholder="Group name…"
+            className="w-48 rounded border border-input bg-background px-2 py-1 text-[13px] outline-none focus:border-ring"
+          />
+        ) : (
+          <button
+            onClick={() => setAdding(true)}
+            className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            + Add group
+          </button>
+        )}
+      </td>
+    </tr>
   );
 }
 

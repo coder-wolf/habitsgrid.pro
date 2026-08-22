@@ -9,6 +9,7 @@ export type Section = {
   id: string;
   name: string;
   habits: Habit[];
+  collapsed: boolean;
 };
 
 export type Completions = Record<string, string[]>;
@@ -34,6 +35,7 @@ export const defaultSections = (): Section[] => [
       makeHabit("Startup work", 100, 3),
       makeHabit("Read & research", 100, 6),
     ],
+    collapsed: false,
   },
   {
     id: uid(),
@@ -44,8 +46,16 @@ export const defaultSections = (): Section[] => [
       makeHabit("Jogging", 30, 4),
       makeHabit("Write", 100, 6),
     ],
+    collapsed: false,
   },
 ];
+
+export const makeSection = (name: string): Section => ({
+  id: uid(),
+  name,
+  habits: [],
+  collapsed: false,
+});
 
 export const monthKey = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
