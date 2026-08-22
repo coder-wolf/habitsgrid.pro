@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   DndContext,
   closestCenter,
@@ -473,7 +474,9 @@ function SortableHabitRow({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(habit.name);
   const [openColor, setOpenColor] = useState(false);
+  const [colorPos, setColorPos] = useState({ x: 0, y: 0 });
   const inputRef = useRef<HTMLInputElement>(null);
+  const colorBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (editing) inputRef.current?.focus();
@@ -520,32 +523,42 @@ function SortableHabitRow({
           </button>
           <div className="relative">
             <button
-              onClick={() => setOpenColor(!openColor)}
+              ref={colorBtnRef}
+              onClick={() => {
+                if (!openColor && colorBtnRef.current) {
+                  const r = colorBtnRef.current.getBoundingClientRect();
+                  setColorPos({ x: r.left, y: r.bottom + 4 });
+                }
+                setOpenColor(!openColor);
+              }}
               className={`size-2 shrink-0 rounded-sm ${habitColorClass[habit.color]} cursor-pointer ring-1 ring-transparent transition-shadow hover:ring-foreground/30`}
               aria-label={`Change color for ${habit.name}`}
             />
-            {openColor && (
-              <div
-                data-color-picker
-                className="absolute left-0 top-4 z-50 flex gap-1 rounded-md border border-border bg-popover p-1.5 shadow-md"
-              >
-                {([1, 2, 3, 4, 5, 6] as Habit["color"][]).map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => {
-                      onRecolor(sectionId, habit.id, c);
-                      setOpenColor(false);
-                    }}
-                    className={`size-4 rounded-sm ${habitColorClass[c]} ${
-                      c === habit.color
-                        ? "ring-2 ring-foreground ring-offset-1 ring-offset-popover"
-                        : "hover:scale-125"
-                    } transition-transform`}
-                    aria-label={`Color ${c}`}
-                  />
-                ))}
-              </div>
-            )}
+            {openColor &&
+              createPortal(
+                <div
+                  data-color-picker
+                  className="fixed z-[9999] flex gap-1 rounded-md border border-border bg-popover p-1.5 shadow-md"
+                  style={{ left: colorPos.x, top: colorPos.y }}
+                >
+                  {([1, 2, 3, 4, 5, 6] as Habit["color"][]).map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => {
+                        onRecolor(sectionId, habit.id, c);
+                        setOpenColor(false);
+                      }}
+                      className={`size-4 rounded-sm ${habitColorClass[c]} ${
+                        c === habit.color
+                          ? "ring-2 ring-foreground ring-offset-1 ring-offset-popover"
+                          : "hover:scale-125"
+                      } transition-transform`}
+                      aria-label={`Color ${c}`}
+                    />
+                  ))}
+                </div>,
+                document.body,
+              )}
           </div>
           {editing ? (
             <input
