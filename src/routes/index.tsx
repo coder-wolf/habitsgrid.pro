@@ -19,6 +19,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
+import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   cellKey,
   daysInMonth,
@@ -592,13 +593,32 @@ function SortableHabitRow({
               {habit.name}
             </span>
           )}
-          <button
-            onClick={() => onRemove(sectionId, habit.id)}
-            aria-label={`Delete ${habit.name}`}
-            className="ml-auto rounded px-1 font-mono text-xs text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-          >
-            ×
-          </button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                aria-label={`Delete ${habit.name}`}
+                className="ml-auto rounded px-1 font-mono text-xs text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+              >
+                ×
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="start" side="right" sideOffset={8} className="w-auto p-3">
+              <p className="text-xs text-foreground">Delete "{habit.name}"?</p>
+              <div className="mt-2 flex gap-1">
+                <button
+                  onClick={() => onRemove(sectionId, habit.id)}
+                  className="rounded bg-destructive px-2 py-0.5 text-[11px] font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
+                >
+                  Delete
+                </button>
+                <PopoverClose asChild>
+                  <button className="rounded px-2 py-0.5 text-[11px] text-muted-foreground transition-colors hover:bg-secondary">
+                    Cancel
+                  </button>
+                </PopoverClose>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </td>
       <td className="border-l border-grid-line px-2 py-1.5 text-center font-mono text-[11px] text-muted-foreground">
