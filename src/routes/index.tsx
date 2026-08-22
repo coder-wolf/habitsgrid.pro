@@ -183,7 +183,7 @@ function Index() {
                   return (
                     <th
                       key={d}
-                      className={`w-8 border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
+                      className={`w-6 border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
                         isToday ? "bg-accent text-accent-foreground" : "text-muted-foreground"
                       }`}
                     >
