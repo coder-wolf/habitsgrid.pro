@@ -183,7 +183,7 @@ function Index() {
                   return (
                     <th
                       key={d}
-                      className={`w-8 border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
+                      className={`w-6 border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
                         isToday ? "bg-accent text-accent-foreground" : "text-muted-foreground"
                       }`}
                     >
@@ -333,7 +333,7 @@ function SectionRows({
                     onClick={() => onToggle(habit.id, d)}
                     aria-label={`${habit.name} day ${d}`}
                     aria-pressed={filled}
-                    className={`block h-7 w-8 transition-colors ${
+                    className={`block h-6 w-6 transition-colors ${
                       filled
                         ? `${habitColorClass[habit.color]} hover:opacity-80`
                         : `${isToday ? "bg-accent/60" : "bg-cell/40"} hover:bg-accent`
