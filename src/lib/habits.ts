@@ -2,7 +2,7 @@ export type Habit = {
   id: string;
   name: string;
   goal: number | null;
-  color: 1 | 2 | 3 | 4 | 5 | 6;
+  color: string;
 };
 
 export type Section = {
@@ -18,7 +18,7 @@ export const STORAGE_KEY = "habit-tracker-v1";
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 
-export const makeHabit = (name: string, goal: number | null, color: Habit["color"]): Habit => ({
+export const makeHabit = (name: string, goal: number | null, color: string): Habit => ({
   id: uid(),
   name,
   goal,
@@ -30,10 +30,10 @@ export const defaultSections = (): Section[] => [
     id: uid(),
     name: "Work Habits",
     habits: [
-      makeHabit("Deep work block", 300, 1),
-      makeHabit("Web dev", null, 2),
-      makeHabit("Startup work", 100, 3),
-      makeHabit("Read & research", 100, 6),
+      makeHabit("Deep work block", 300, "#3b82f6"),
+      makeHabit("Web dev", null, "#f97316"),
+      makeHabit("Startup work", 100, "#84cc16"),
+      makeHabit("Read & research", 100, "#6b7280"),
     ],
     collapsed: false,
   },
@@ -41,10 +41,10 @@ export const defaultSections = (): Section[] => [
     id: uid(),
     name: "Personal Habits",
     habits: [
-      makeHabit("Wake up early", null, 4),
-      makeHabit("Workout", 30, 5),
-      makeHabit("Jogging", 30, 4),
-      makeHabit("Write", 100, 6),
+      makeHabit("Wake up early", null, "#22c55e"),
+      makeHabit("Workout", 30, "#a855f7"),
+      makeHabit("Jogging", 30, "#22c55e"),
+      makeHabit("Write", 100, "#6b7280"),
     ],
     collapsed: false,
   },
@@ -63,24 +63,6 @@ export const monthKey = (d: Date) =>
 export const daysInMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
 
 export const cellKey = (month: string, day: number) => `${month}-${String(day).padStart(2, "0")}`;
-
-export const habitColorClass: Record<Habit["color"], string> = {
-  1: "bg-habit-1",
-  2: "bg-habit-2",
-  3: "bg-habit-3",
-  4: "bg-habit-4",
-  5: "bg-habit-5",
-  6: "bg-habit-6",
-};
-
-export const habitTextClass: Record<Habit["color"], string> = {
-  1: "text-habit-1",
-  2: "text-habit-2",
-  3: "text-habit-3",
-  4: "text-habit-4",
-  5: "text-habit-5",
-  6: "text-habit-6",
-};
 
 export const weekdayLabel = (year: number, monthIndex: number, day: number) =>
   ["S", "M", "T", "W", "T", "F", "S"][new Date(year, monthIndex, day).getDay()];

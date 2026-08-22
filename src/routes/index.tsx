@@ -19,13 +19,12 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, ChevronRight, ChevronDown } from "lucide-react";
+import { HexColorPicker } from "react-colorful";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   cellKey,
   daysInMonth,
   defaultSections,
-  habitColorClass,
-  habitTextClass,
   makeHabit,
   makeSection,
   monthKey,
@@ -191,6 +190,8 @@ function Index() {
   const monthCount = (habit: Habit) =>
     (state.completions[habit.id] ?? []).filter((k) => k.startsWith(month)).length;
 
+  const defaultColors = ["#3b82f6", "#f97316", "#22c55e", "#a855f7", "#ef4444", "#06b6d4"];
+
   const addHabit = (sectionId: string) => {
     const name = draft.trim();
     if (!name) return;
@@ -202,7 +203,7 @@ function Index() {
               ...s,
               habits: [
                 ...s.habits,
-                makeHabit(name, null, ((s.habits.length % 6) + 1) as Habit["color"]),
+                makeHabit(name, null, defaultColors[s.habits.length % defaultColors.length]),
               ],
             }
           : s,
@@ -234,7 +235,7 @@ function Index() {
     }));
   };
 
-  const recolorHabit = (sectionId: string, habitId: string, color: Habit["color"]) => {
+  const recolorHabit = (sectionId: string, habitId: string, color: string) => {
     setState((prev) => ({
       ...prev,
       sections: prev.sections.map((s) =>
@@ -481,7 +482,7 @@ type SectionRowsProps = {
   onToggle: (habitId: string, day: number) => void;
   onRemove: (sectionId: string, habitId: string) => void;
   onRename: (sectionId: string, habitId: string, name: string) => void;
-  onRecolor: (sectionId: string, habitId: string, color: Habit["color"]) => void;
+  onRecolor: (sectionId: string, habitId: string, color: string) => void;
   onToggleSection: (sectionId: string) => void;
   onRenameSection: (sectionId: string, name: string) => void;
   onRemoveSection: (sectionId: string) => void;
@@ -718,7 +719,7 @@ type SortableHabitRowProps = {
   onToggle: (habitId: string, day: number) => void;
   onRemove: (sectionId: string, habitId: string) => void;
   onRename: (sectionId: string, habitId: string, name: string) => void;
-  onRecolor: (sectionId: string, habitId: string, color: Habit["color"]) => void;
+  onRecolor: (sectionId: string, habitId: string, color: string) => void;
 };
 
 function SortableHabitRow({
@@ -786,31 +787,21 @@ function SortableHabitRow({
                 }
                 setOpenColor(!openColor);
               }}
-              className={`size-2 shrink-0 rounded-sm ${habitColorClass[habit.color]} cursor-pointer ring-1 ring-transparent transition-shadow hover:ring-foreground/30`}
+              className="size-2 shrink-0 rounded-sm cursor-pointer ring-1 ring-transparent transition-shadow hover:ring-foreground/30"
+              style={{ backgroundColor: habit.color }}
               aria-label={`Change color for ${habit.name}`}
             />
             {openColor &&
               createPortal(
                 <div
                   data-color-picker
-                  className="fixed z-[9999] flex gap-1 rounded-md border border-border bg-popover p-1.5 shadow-md"
+                  className="fixed z-[9999] rounded-lg border border-border bg-popover p-3 shadow-md"
                   style={{ left: colorPos.x, top: colorPos.y }}
                 >
-                  {([1, 2, 3, 4, 5, 6] as Habit["color"][]).map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => {
-                        onRecolor(sectionId, habit.id, c);
-                        setOpenColor(false);
-                      }}
-                      className={`size-4 rounded-sm ${habitColorClass[c]} ${
-                        c === habit.color
-                          ? "ring-2 ring-foreground ring-offset-1 ring-offset-popover"
-                          : "hover:scale-125"
-                      } transition-transform`}
-                      aria-label={`Color ${c}`}
-                    />
-                  ))}
+                  <HexColorPicker
+                    color={habit.color}
+                    onChange={(c) => onRecolor(sectionId, habit.id, c)}
+                  />
                 </div>,
                 document.body,
               )}
@@ -849,7 +840,8 @@ function SortableHabitRow({
         </div>
       </td>
       <td
-        className={`sticky left-[240px] z-10 bg-surface px-2 py-1.5 text-center font-mono text-[11px] font-medium group-hover:bg-secondary ${habitTextClass[habit.color]}`}
+        className="sticky left-[240px] z-10 bg-surface px-2 py-1.5 text-center font-mono text-[11px] font-medium group-hover:bg-secondary"
+        style={{ color: habit.color }}
       >
         {count}
       </td>
@@ -868,9 +860,10 @@ function SortableHabitRow({
               aria-pressed={filled}
               className={`block h-7 ${isToday ? "w-[60px]" : "w-8"} transition-colors ${
                 filled
-                  ? `${habitColorClass[habit.color]} hover:opacity-80`
+                  ? "hover:opacity-80"
                   : `${isToday ? "bg-accent/50" : "bg-cell/40"} hover:bg-accent`
               }`}
+              style={filled ? { backgroundColor: habit.color } : undefined}
             />
           </td>
         );
