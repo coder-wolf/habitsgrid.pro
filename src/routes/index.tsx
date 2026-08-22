@@ -163,10 +163,10 @@ function Index() {
         </header>
 
         <div className="overflow-x-auto rounded-lg border border-grid-line bg-surface shadow-sm">
-          <table className="w-full border-collapse text-left">
+          <table className="table-fixed border-collapse text-left">
             <thead>
               <tr className="border-b border-grid-line">
-                <th className="sticky left-0 z-20 min-w-[240px] bg-secondary px-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                <th className="sticky left-0 z-20 w-[240px] bg-secondary px-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                   Habit
                 </th>
                 <th className="w-14 bg-accent px-2 py-2 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-accent-foreground">
@@ -183,7 +183,7 @@ function Index() {
                   return (
                     <th
                       key={d}
-                      className={`w-7 border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
+                      className={`w-8 border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
                         isToday ? "bg-accent text-accent-foreground" : "text-muted-foreground"
                       }`}
                     >
@@ -333,7 +333,7 @@ function SectionRows({
                     onClick={() => onToggle(habit.id, d)}
                     aria-label={`${habit.name} day ${d}`}
                     aria-pressed={filled}
-                    className={`block h-7 w-full transition-colors ${
+                    className={`block h-7 w-8 transition-colors ${
                       filled
                         ? `${habitColorClass[habit.color]} hover:opacity-80`
                         : `${isToday ? "bg-accent/60" : "bg-cell/40"} hover:bg-accent`
