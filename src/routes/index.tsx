@@ -847,7 +847,7 @@ function SortableHabitRow({
         </div>
       </td>
       <td
-        className={`sticky left-[240px] z-10 border-l border-grid-line bg-surface px-2 py-1.5 text-center font-mono text-[11px] font-medium group-hover:bg-secondary ${habitTextClass[habit.color]}`}
+        className={`sticky left-[240px] z-10 bg-surface px-2 py-1.5 text-center font-mono text-[11px] font-medium group-hover:bg-secondary ${habitTextClass[habit.color]}`}
       >
         {count}
       </td>
