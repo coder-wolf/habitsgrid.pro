@@ -333,7 +333,7 @@ function SectionRows({
                     onClick={() => onToggle(habit.id, d)}
                     aria-label={`${habit.name} day ${d}`}
                     aria-pressed={filled}
-                    className={`block h-7 w-8 transition-colors ${
+                    className={`block h-6 w-6 transition-colors ${
                       filled
                         ? `${habitColorClass[habit.color]} hover:opacity-80`
                         : `${isToday ? "bg-accent/60" : "bg-cell/40"} hover:bg-accent`
