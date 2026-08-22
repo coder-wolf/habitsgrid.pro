@@ -408,7 +408,9 @@ function Index() {
                       <th
                         key={d}
                         className={`w-6 border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
-                          isToday ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                          isToday
+                            ? "bg-accent text-accent-foreground border-l-accent border-r-accent"
+                            : "text-muted-foreground"
                         }`}
                       >
                         <span className="block leading-tight">{d}</span>
@@ -856,7 +858,10 @@ function SortableHabitRow({
         const filled = done.includes(key);
         const isToday = isCurrentMonth && d === today.getDate();
         return (
-          <td key={d} className="border-l border-grid-line p-0">
+          <td
+            key={d}
+            className={`border-l p-0 ${isToday ? "border-l-accent" : "border-grid-line"}`}
+          >
             <button
               onClick={() => onToggle(habit.id, d)}
               aria-label={`${habit.name} day ${d}`}
@@ -864,7 +869,7 @@ function SortableHabitRow({
               className={`block h-7 w-8 transition-colors ${
                 filled
                   ? `${habitColorClass[habit.color]} hover:opacity-80`
-                  : `${isToday ? "bg-accent/60" : "bg-cell/40"} hover:bg-accent`
+                  : `${isToday ? "bg-accent/50" : "bg-cell/40"} hover:bg-accent`
               }`}
             />
           </td>
