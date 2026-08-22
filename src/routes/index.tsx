@@ -673,7 +673,7 @@ function AddGroupRow({ onAdd }: { onAdd: (name: string) => void }) {
 
   return (
     <tr className="border-t border-grid-line">
-      <td colSpan={100} className="px-4 py-2">
+      <td className="sticky left-0 z-10 w-[240px] bg-surface px-4 py-1.5">
         {adding ? (
           <input
             ref={inputRef}
@@ -693,12 +693,13 @@ function AddGroupRow({ onAdd }: { onAdd: (name: string) => void }) {
         ) : (
           <button
             onClick={() => setAdding(true)}
-            className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+            className="rounded border border-dashed border-border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:border-muted-foreground/40 hover:text-foreground"
           >
             + Add group
           </button>
         )}
       </td>
+      <td colSpan={100} className="bg-cell/30" />
     </tr>
   );
 }
