@@ -1,6 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
+import {
   cellKey,
   daysInMonth,
   defaultSections,
@@ -46,6 +64,11 @@ function Index() {
   const [loaded, setLoaded] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   useEffect(() => {
     try {
@@ -96,7 +119,13 @@ function Index() {
       ...prev,
       sections: prev.sections.map((s) =>
         s.id === sectionId
-          ? { ...s, habits: [...s.habits, makeHabit(name, null, ((s.habits.length % 6) + 1) as Habit["color"])] }
+          ? {
+              ...s,
+              habits: [
+                ...s.habits,
+                makeHabit(name, null, ((s.habits.length % 6) + 1) as Habit["color"]),
+              ],
+            }
           : s,
       ),
     }));
@@ -113,12 +142,58 @@ function Index() {
     }));
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const sourceSection = state.sections.find((s) => s.habits.some((h) => h.id === active.id));
+    const destSection = state.sections.find((s) => s.habits.some((h) => h.id === over.id));
+
+    if (!sourceSection || !destSection) return;
+
+    setState((prev) => {
+      if (sourceSection.id === destSection.id) {
+        return {
+          ...prev,
+          sections: prev.sections.map((s) => {
+            if (s.id !== sourceSection.id) return s;
+            const oldIndex = s.habits.findIndex((h) => h.id === active.id);
+            const newIndex = s.habits.findIndex((h) => h.id === over.id);
+            return { ...s, habits: arrayMove(s.habits, oldIndex, newIndex) };
+          }),
+        };
+      }
+
+      const source = prev.sections.find((s) => s.id === sourceSection.id)!;
+      const dest = prev.sections.find((s) => s.id === destSection.id)!;
+      const activeHabit = source.habits.find((h) => h.id === active.id)!;
+      const overIndex = dest.habits.findIndex((h) => h.id === over.id);
+
+      return {
+        ...prev,
+        sections: prev.sections.map((s) => {
+          if (s.id === sourceSection.id) {
+            return { ...s, habits: s.habits.filter((h) => h.id !== active.id) };
+          }
+          if (s.id === destSection.id) {
+            const newHabits = [...dest.habits];
+            newHabits.splice(overIndex, 0, activeHabit);
+            return { ...s, habits: newHabits };
+          }
+          return s;
+        }),
+      };
+    });
+  };
+
   const shiftMonth = (delta: number) =>
     setCursor((c) => new Date(c.getFullYear(), c.getMonth() + delta, 1));
 
   const allHabits = state.sections.flatMap((s) => s.habits);
   const doneToday = isCurrentMonth
-    ? allHabits.filter((h) => (state.completions[h.id] ?? []).includes(cellKey(month, today.getDate()))).length
+    ? allHabits.filter((h) =>
+        (state.completions[h.id] ?? []).includes(cellKey(month, today.getDate())),
+      ).length
     : 0;
 
   return (
@@ -162,71 +237,73 @@ function Index() {
           </div>
         </header>
 
-        <div className="overflow-x-auto rounded-lg border border-grid-line bg-surface shadow-sm">
-          <table className="table-fixed border-collapse text-left">
-            <thead>
-              <tr className="border-b border-grid-line">
-                <th className="sticky left-0 z-20 w-[240px] bg-secondary px-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  Habit
-                </th>
-                <th className="w-14 bg-accent px-2 py-2 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-accent-foreground">
-                  Goal
-                </th>
-                <th className="w-14 bg-accent px-2 py-2 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-accent-foreground">
-                  Count
-                </th>
-                <th className="w-24 bg-accent px-2 py-2 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-accent-foreground">
-                  Progress
-                </th>
-                {days.map((d) => {
-                  const isToday = isCurrentMonth && d === today.getDate();
-                  return (
-                    <th
-                      key={d}
-                      className={`w-6 border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
-                        isToday ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-                      }`}
-                    >
-                      <span className="block leading-tight">{d}</span>
-                      <span className="block text-[9px] opacity-50">
-                        {weekdayLabel(cursor.getFullYear(), cursor.getMonth(), d)}
-                      </span>
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {state.sections.map((section) => (
-                <SectionRows
-                  key={section.id}
-                  section={section}
-                  days={days}
-                  month={month}
-                  today={today}
-                  isCurrentMonth={isCurrentMonth}
-                  completions={state.completions}
-                  monthCount={monthCount}
-                  totalCount={totalCount}
-                  onToggle={toggle}
-                  onRemove={removeHabit}
-                  adding={adding === section.id}
-                  draft={draft}
-                  setDraft={setDraft}
-                  onStartAdd={() => {
-                    setAdding(section.id);
-                    setDraft("");
-                  }}
-                  onCancelAdd={() => setAdding(null)}
-                  onCommitAdd={() => addHabit(section.id)}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div className="overflow-x-auto rounded-lg border border-grid-line bg-surface shadow-sm">
+            <table className="table-fixed border-collapse text-left">
+              <thead>
+                <tr className="border-b border-grid-line">
+                  <th className="sticky left-0 z-20 w-[240px] bg-secondary px-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    Habit
+                  </th>
+                  <th className="w-14 bg-accent px-2 py-2 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-accent-foreground">
+                    Goal
+                  </th>
+                  <th className="w-14 bg-accent px-2 py-2 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-accent-foreground">
+                    Count
+                  </th>
+                  <th className="w-24 bg-accent px-2 py-2 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-accent-foreground">
+                    Progress
+                  </th>
+                  {days.map((d) => {
+                    const isToday = isCurrentMonth && d === today.getDate();
+                    return (
+                      <th
+                        key={d}
+                        className={`w-6 border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
+                          isToday ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                        }`}
+                      >
+                        <span className="block leading-tight">{d}</span>
+                        <span className="block text-[9px] opacity-50">
+                          {weekdayLabel(cursor.getFullYear(), cursor.getMonth(), d)}
+                        </span>
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {state.sections.map((section) => (
+                  <SectionRows
+                    key={section.id}
+                    section={section}
+                    days={days}
+                    month={month}
+                    today={today}
+                    isCurrentMonth={isCurrentMonth}
+                    completions={state.completions}
+                    monthCount={monthCount}
+                    totalCount={totalCount}
+                    onToggle={toggle}
+                    onRemove={removeHabit}
+                    adding={adding === section.id}
+                    draft={draft}
+                    setDraft={setDraft}
+                    onStartAdd={() => {
+                      setAdding(section.id);
+                      setDraft("");
+                    }}
+                    onCancelAdd={() => setAdding(null)}
+                    onCommitAdd={() => addHabit(section.id)}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </DndContext>
 
         <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-          Click any cell to tick a day · saved on this device
+          Drag to reorder habits · Click any cell to tick a day · saved on this device
         </p>
       </div>
     </div>
@@ -271,9 +348,10 @@ function SectionRows({
   onCommitAdd,
 }: SectionRowsProps) {
   const span = days.length + 4;
+  const habitIds = section.habits.map((h) => h.id);
 
   return (
-    <>
+    <SortableContext items={habitIds} strategy={verticalListSortingStrategy}>
       <tr className="border-y border-grid-line bg-secondary">
         <td colSpan={span} className="px-4 py-2">
           <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -282,69 +360,22 @@ function SectionRows({
         </td>
       </tr>
 
-      {section.habits.map((habit) => {
-        const done = completions[habit.id] ?? [];
-        const count = monthCount(habit);
-        const total = totalCount(habit);
-        const pct = habit.goal ? Math.min(100, Math.round((total / habit.goal) * 100)) : null;
-
-        return (
-          <tr key={habit.id} className="group border-b border-grid-line last:border-b-0">
-            <td className="sticky left-0 z-10 bg-surface px-4 py-1.5 group-hover:bg-secondary">
-              <div className="flex items-center gap-2">
-                <span className={`size-2 shrink-0 rounded-sm ${habitColorClass[habit.color]}`} />
-                <span className="truncate text-[13px]">{habit.name}</span>
-                <button
-                  onClick={() => onRemove(section.id, habit.id)}
-                  aria-label={`Delete ${habit.name}`}
-                  className="ml-auto rounded px-1 font-mono text-xs text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-                >
-                  ×
-                </button>
-              </div>
-            </td>
-            <td className="border-l border-grid-line px-2 py-1.5 text-center font-mono text-[11px] text-muted-foreground">
-              {habit.goal ?? "—"}
-            </td>
-            <td
-              className={`border-l border-grid-line px-2 py-1.5 text-center font-mono text-[11px] font-medium ${habitTextClass[habit.color]}`}
-            >
-              {count}
-            </td>
-            <td className="border-l border-grid-line px-2 py-1.5">
-              {pct === null ? (
-                <span className="block text-center font-mono text-[11px] text-muted-foreground">—</span>
-              ) : (
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-cell">
-                  <div
-                    className={`h-full rounded-full transition-[width] duration-500 ${habitColorClass[habit.color]}`}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-              )}
-            </td>
-            {days.map((d) => {
-              const key = cellKey(month, d);
-              const filled = done.includes(key);
-              const isToday = isCurrentMonth && d === today.getDate();
-              return (
-                <td key={d} className="border-l border-grid-line p-0">
-                  <button
-                    onClick={() => onToggle(habit.id, d)}
-                    aria-label={`${habit.name} day ${d}`}
-                    aria-pressed={filled}
-                    className={`block h-7 w-8 transition-colors ${
-                      filled
-                        ? `${habitColorClass[habit.color]} hover:opacity-80`
-                        : `${isToday ? "bg-accent/60" : "bg-cell/40"} hover:bg-accent`
-                    }`}
-                  />
-                </td>
-              );
-            })}
-          </tr>
-        );
-      })}
+      {section.habits.map((habit) => (
+        <SortableHabitRow
+          key={habit.id}
+          habit={habit}
+          sectionId={section.id}
+          days={days}
+          month={month}
+          today={today}
+          isCurrentMonth={isCurrentMonth}
+          completions={completions}
+          monthCount={monthCount}
+          totalCount={totalCount}
+          onToggle={onToggle}
+          onRemove={onRemove}
+        />
+      ))}
 
       <tr className="border-b border-grid-line">
         <td className="sticky left-0 z-10 bg-surface px-4 py-1.5">
@@ -372,6 +403,118 @@ function SectionRows({
         </td>
         <td colSpan={days.length + 3} className="bg-cell/30" />
       </tr>
-    </>
+    </SortableContext>
+  );
+}
+
+type SortableHabitRowProps = {
+  habit: Habit;
+  sectionId: string;
+  days: number[];
+  month: string;
+  today: Date;
+  isCurrentMonth: boolean;
+  completions: Completions;
+  monthCount: (h: Habit) => number;
+  totalCount: (h: Habit) => number;
+  onToggle: (habitId: string, day: number) => void;
+  onRemove: (sectionId: string, habitId: string) => void;
+};
+
+function SortableHabitRow({
+  habit,
+  sectionId,
+  days,
+  month,
+  today,
+  isCurrentMonth,
+  completions,
+  monthCount,
+  totalCount,
+  onToggle,
+  onRemove,
+}: SortableHabitRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: habit.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : undefined,
+  };
+
+  const done = completions[habit.id] ?? [];
+  const count = monthCount(habit);
+  const total = totalCount(habit);
+  const pct = habit.goal ? Math.min(100, Math.round((total / habit.goal) * 100)) : null;
+
+  return (
+    <tr
+      ref={setNodeRef}
+      style={style}
+      className={`group border-b border-grid-line last:border-b-0 ${isDragging ? "relative z-50" : ""}`}
+    >
+      <td className="sticky left-0 z-10 bg-surface px-4 py-1.5 group-hover:bg-secondary">
+        <div className="flex items-center gap-2">
+          <button
+            {...attributes}
+            {...listeners}
+            className="shrink-0 rounded p-0.5 text-muted-foreground/50 hover:text-foreground active:cursor-grabbing"
+            aria-label={`Drag ${habit.name}`}
+          >
+            <GripVertical className="size-3.5" />
+          </button>
+          <span className={`size-2 shrink-0 rounded-sm ${habitColorClass[habit.color]}`} />
+          <span className="truncate text-[13px]">{habit.name}</span>
+          <button
+            onClick={() => onRemove(sectionId, habit.id)}
+            aria-label={`Delete ${habit.name}`}
+            className="ml-auto rounded px-1 font-mono text-xs text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+          >
+            ×
+          </button>
+        </div>
+      </td>
+      <td className="border-l border-grid-line px-2 py-1.5 text-center font-mono text-[11px] text-muted-foreground">
+        {habit.goal ?? "—"}
+      </td>
+      <td
+        className={`border-l border-grid-line px-2 py-1.5 text-center font-mono text-[11px] font-medium ${habitTextClass[habit.color]}`}
+      >
+        {count}
+      </td>
+      <td className="border-l border-grid-line px-2 py-1.5">
+        {pct === null ? (
+          <span className="block text-center font-mono text-[11px] text-muted-foreground">—</span>
+        ) : (
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-cell">
+            <div
+              className={`h-full rounded-full transition-[width] duration-500 ${habitColorClass[habit.color]}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        )}
+      </td>
+      {days.map((d) => {
+        const key = cellKey(month, d);
+        const filled = done.includes(key);
+        const isToday = isCurrentMonth && d === today.getDate();
+        return (
+          <td key={d} className="border-l border-grid-line p-0">
+            <button
+              onClick={() => onToggle(habit.id, d)}
+              aria-label={`${habit.name} day ${d}`}
+              aria-pressed={filled}
+              className={`block h-7 w-8 transition-colors ${
+                filled
+                  ? `${habitColorClass[habit.color]} hover:opacity-80`
+                  : `${isToday ? "bg-accent/60" : "bg-cell/40"} hover:bg-accent`
+              }`}
+            />
+          </td>
+        );
+      })}
+    </tr>
   );
 }
