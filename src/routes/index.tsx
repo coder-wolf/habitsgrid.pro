@@ -155,7 +155,24 @@ function Index() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as State;
-        setState({ sections: parsed.sections ?? [], completions: parsed.completions ?? {} });
+        const migrateColor = (c: unknown): string => {
+          if (typeof c === "string" && c.startsWith("#")) return c;
+          const map: Record<number, string> = {
+            1: "#3b82f6",
+            2: "#f97316",
+            3: "#84cc16",
+            4: "#22c55e",
+            5: "#a855f7",
+            6: "#6b7280",
+          };
+          return map[Number(c)] ?? "#3b82f6";
+        };
+        const sections = (parsed.sections ?? []).map((s) => ({
+          ...s,
+          collapsed: s.collapsed ?? false,
+          habits: s.habits.map((h) => ({ ...h, color: migrateColor(h.color) })),
+        }));
+        setState({ sections, completions: parsed.completions ?? {} });
       } else {
         setState({ sections: defaultSections(), completions: {} });
       }
