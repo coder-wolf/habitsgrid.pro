@@ -396,7 +396,7 @@ function Index() {
             <table className="table-fixed border-collapse text-left">
               <thead>
                 <tr className="border-b border-grid-line">
-                  <th className="sticky left-0 z-20 w-[240px] bg-secondary pl-4 pr-2 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  <th className="sticky left-0 z-20 w-[240px] bg-secondary pl-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                     Habit
                   </th>
                   <th className="sticky left-[240px] z-20 w-14 bg-secondary px-2 py-2 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
@@ -540,7 +540,7 @@ function SectionRows({
         style={sectionStyle}
         className={`border-y border-grid-line bg-secondary group/section ${sectionDragging ? "relative z-50" : ""}`}
       >
-        <td className="sticky left-0 z-10 w-[240px] bg-secondary pl-4 pr-2 py-2">
+        <td className="sticky left-0 z-10 w-[240px] bg-secondary pl-4 py-2">
           <div className="flex items-center gap-1">
             <button
               {...sectionAttributes}
@@ -628,7 +628,7 @@ function SectionRows({
 
       {!section.collapsed && (
         <tr className="border-b border-grid-line">
-          <td className="sticky left-0 z-10 bg-surface pl-4 pr-2 py-1.5">
+          <td className="sticky left-0 z-10 bg-surface pl-4 py-1.5">
             {adding ? (
               <input
                 autoFocus
@@ -675,7 +675,7 @@ function AddGroupRow({ onAdd }: { onAdd: (name: string) => void }) {
 
   return (
     <tr className="border-t border-grid-line">
-      <td className="sticky left-0 z-10 w-[240px] bg-surface pl-4 pr-2 py-1.5">
+      <td className="sticky left-0 z-10 w-[240px] bg-surface pl-4 py-1.5">
         {adding ? (
           <input
             ref={inputRef}
@@ -766,7 +766,7 @@ function SortableHabitRow({
       style={style}
       className={`group border-b border-grid-line last:border-b-0 ${isDragging ? "relative z-50" : ""}`}
     >
-      <td className="sticky left-0 z-10 bg-surface pl-4 pr-2 py-1.5 group-hover:bg-secondary">
+      <td className="sticky left-0 z-10 bg-surface pl-4 py-1.5 group-hover:bg-secondary">
         <div className="flex items-center gap-2">
           <button
             {...attributes}
