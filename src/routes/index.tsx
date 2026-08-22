@@ -191,8 +191,6 @@ function Index() {
   const monthCount = (habit: Habit) =>
     (state.completions[habit.id] ?? []).filter((k) => k.startsWith(month)).length;
 
-  const totalCount = (habit: Habit) => (state.completions[habit.id] ?? []).length;
-
   const addHabit = (sectionId: string) => {
     const name = draft.trim();
     if (!name) return;
@@ -401,14 +399,8 @@ function Index() {
                   <th className="sticky left-0 z-20 w-[240px] bg-secondary px-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                     Habit
                   </th>
-                  <th className="w-14 bg-accent px-2 py-2 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-accent-foreground">
-                    Goal
-                  </th>
-                  <th className="w-14 bg-accent px-2 py-2 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-accent-foreground">
+                  <th className="sticky left-[240px] z-20 w-14 bg-secondary px-2 py-2 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                     Count
-                  </th>
-                  <th className="w-24 bg-accent px-2 py-2 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-accent-foreground">
-                    Progress
                   </th>
                   {days.map((d) => {
                     const isToday = isCurrentMonth && d === today.getDate();
@@ -443,7 +435,6 @@ function Index() {
                       isCurrentMonth={isCurrentMonth}
                       completions={state.completions}
                       monthCount={monthCount}
-                      totalCount={totalCount}
                       onToggle={toggle}
                       onRemove={removeHabit}
                       onRename={renameHabit}
@@ -485,7 +476,6 @@ type SectionRowsProps = {
   isCurrentMonth: boolean;
   completions: Completions;
   monthCount: (h: Habit) => number;
-  totalCount: (h: Habit) => number;
   onToggle: (habitId: string, day: number) => void;
   onRemove: (sectionId: string, habitId: string) => void;
   onRename: (sectionId: string, habitId: string, name: string) => void;
@@ -509,7 +499,6 @@ function SectionRows({
   isCurrentMonth,
   completions,
   monthCount,
-  totalCount,
   onToggle,
   onRemove,
   onRename,
@@ -524,7 +513,7 @@ function SectionRows({
   onCancelAdd,
   onCommitAdd,
 }: SectionRowsProps) {
-  const span = days.length + 4;
+  const span = days.length + 2;
   const habitIds = section.habits.map((h) => h.id);
 
   const {
@@ -626,7 +615,6 @@ function SectionRows({
               isCurrentMonth={isCurrentMonth}
               completions={completions}
               monthCount={monthCount}
-              totalCount={totalCount}
               onToggle={onToggle}
               onRemove={onRemove}
               onRename={onRename}
@@ -661,7 +649,7 @@ function SectionRows({
               </button>
             )}
           </td>
-          <td colSpan={days.length + 3} className="bg-cell/30" />
+          <td colSpan={days.length + 1} className="bg-cell/30" />
         </tr>
       )}
     </>
@@ -724,7 +712,6 @@ type SortableHabitRowProps = {
   isCurrentMonth: boolean;
   completions: Completions;
   monthCount: (h: Habit) => number;
-  totalCount: (h: Habit) => number;
   onToggle: (habitId: string, day: number) => void;
   onRemove: (sectionId: string, habitId: string) => void;
   onRename: (sectionId: string, habitId: string, name: string) => void;
@@ -740,7 +727,6 @@ function SortableHabitRow({
   isCurrentMonth,
   completions,
   monthCount,
-  totalCount,
   onToggle,
   onRemove,
   onRename,
@@ -770,8 +756,6 @@ function SortableHabitRow({
 
   const done = completions[habit.id] ?? [];
   const count = monthCount(habit);
-  const total = totalCount(habit);
-  const pct = habit.goal ? Math.min(100, Math.round((total / habit.goal) * 100)) : null;
 
   return (
     <tr
@@ -861,25 +845,10 @@ function SortableHabitRow({
           </Popover>
         </div>
       </td>
-      <td className="border-l border-grid-line px-2 py-1.5 text-center font-mono text-[11px] text-muted-foreground">
-        {habit.goal ?? "—"}
-      </td>
       <td
-        className={`border-l border-grid-line px-2 py-1.5 text-center font-mono text-[11px] font-medium ${habitTextClass[habit.color]}`}
+        className={`sticky left-[240px] z-10 border-l border-grid-line bg-surface px-2 py-1.5 text-center font-mono text-[11px] font-medium group-hover:bg-secondary ${habitTextClass[habit.color]}`}
       >
         {count}
-      </td>
-      <td className="border-l border-grid-line px-2 py-1.5">
-        {pct === null ? (
-          <span className="block text-center font-mono text-[11px] text-muted-foreground">—</span>
-        ) : (
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-cell">
-            <div
-              className={`h-full rounded-full transition-[width] duration-500 ${habitColorClass[habit.color]}`}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-        )}
       </td>
       {days.map((d) => {
         const key = cellKey(month, d);
