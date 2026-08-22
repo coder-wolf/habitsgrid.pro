@@ -25,7 +25,6 @@ import {
   daysInMonth,
   defaultSections,
   habitColorClass,
-  habitTextClass,
   makeHabit,
   makeSection,
   monthKey,
@@ -187,9 +186,6 @@ function Index() {
     },
     [month],
   );
-
-  const monthCount = (habit: Habit) =>
-    (state.completions[habit.id] ?? []).filter((k) => k.startsWith(month)).length;
 
   const addHabit = (sectionId: string) => {
     const name = draft.trim();
@@ -399,9 +395,6 @@ function Index() {
                   <th className="sticky left-0 z-20 w-[240px] bg-secondary pl-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                     Habit
                   </th>
-                  <th className="sticky left-[240px] z-20 w-14 bg-secondary px-2 py-2 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                    Count
-                  </th>
                   {days.map((d) => {
                     const isToday = isCurrentMonth && d === today.getDate();
                     return (
@@ -436,7 +429,6 @@ function Index() {
                       today={today}
                       isCurrentMonth={isCurrentMonth}
                       completions={state.completions}
-                      monthCount={monthCount}
                       onToggle={toggle}
                       onRemove={removeHabit}
                       onRename={renameHabit}
@@ -477,7 +469,6 @@ type SectionRowsProps = {
   today: Date;
   isCurrentMonth: boolean;
   completions: Completions;
-  monthCount: (h: Habit) => number;
   onToggle: (habitId: string, day: number) => void;
   onRemove: (sectionId: string, habitId: string) => void;
   onRename: (sectionId: string, habitId: string, name: string) => void;
@@ -500,7 +491,6 @@ function SectionRows({
   today,
   isCurrentMonth,
   completions,
-  monthCount,
   onToggle,
   onRemove,
   onRename,
@@ -515,7 +505,7 @@ function SectionRows({
   onCancelAdd,
   onCommitAdd,
 }: SectionRowsProps) {
-  const span = days.length + 2;
+  const span = days.length + 1;
   const habitIds = section.habits.map((h) => h.id);
 
   const {
@@ -616,7 +606,6 @@ function SectionRows({
               today={today}
               isCurrentMonth={isCurrentMonth}
               completions={completions}
-              monthCount={monthCount}
               onToggle={onToggle}
               onRemove={onRemove}
               onRename={onRename}
@@ -651,7 +640,7 @@ function SectionRows({
               </button>
             )}
           </td>
-          <td colSpan={days.length + 1} className="bg-cell/30" />
+          <td colSpan={days.length} className="bg-cell/30" />
         </tr>
       )}
     </>
@@ -714,7 +703,6 @@ type SortableHabitRowProps = {
   today: Date;
   isCurrentMonth: boolean;
   completions: Completions;
-  monthCount: (h: Habit) => number;
   onToggle: (habitId: string, day: number) => void;
   onRemove: (sectionId: string, habitId: string) => void;
   onRename: (sectionId: string, habitId: string, name: string) => void;
@@ -729,7 +717,6 @@ function SortableHabitRow({
   today,
   isCurrentMonth,
   completions,
-  monthCount,
   onToggle,
   onRemove,
   onRename,
@@ -758,7 +745,6 @@ function SortableHabitRow({
   };
 
   const done = completions[habit.id] ?? [];
-  const count = monthCount(habit);
 
   return (
     <tr
@@ -847,11 +833,6 @@ function SortableHabitRow({
             </PopoverContent>
           </Popover>
         </div>
-      </td>
-      <td
-        className={`sticky left-[240px] z-10 bg-surface px-2 py-1.5 text-center font-mono text-[11px] font-medium group-hover:bg-secondary ${habitTextClass[habit.color]}`}
-      >
-        {count}
       </td>
       {days.map((d) => {
         const key = cellKey(month, d);
