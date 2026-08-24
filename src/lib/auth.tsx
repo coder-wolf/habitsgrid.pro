@@ -4,13 +4,10 @@ import { supabase } from "@/lib/supabase";
 
 export type AuthUser = { id: string; email: string };
 
-type SignUpResult = { error: string | null; needsConfirmation: boolean };
-
 type AuthContextValue = {
   user: AuthUser | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<string | null>;
-  signUp: (email: string, password: string) => Promise<SignUpResult>;
+  signInWithGoogle: () => Promise<string | null>;
   signOut: () => Promise<void>;
 };
 
@@ -48,16 +45,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       loading,
-      signIn: async (email, password) => {
+      signInWithGoogle: async () => {
         if (!supabase) return "Cloud sync is not configured.";
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: window.location.origin },
+        });
         return error ? error.message : null;
-      },
-      signUp: async (email, password) => {
-        if (!supabase) return { error: "Cloud sync is not configured.", needsConfirmation: false };
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        if (error) return { error: error.message, needsConfirmation: false };
-        return { error: null, needsConfirmation: !data.session };
       },
       signOut: async () => {
         await supabase?.auth.signOut();
