@@ -25,31 +25,6 @@ export const makeHabit = (name: string, goal: number | null, color: Habit["color
   color,
 });
 
-export const defaultSections = (): Section[] => [
-  {
-    id: uid(),
-    name: "Work Habits",
-    habits: [
-      makeHabit("Deep work block", 300, 1),
-      makeHabit("Web dev", null, 2),
-      makeHabit("Startup work", 100, 3),
-      makeHabit("Read & research", 100, 6),
-    ],
-    collapsed: false,
-  },
-  {
-    id: uid(),
-    name: "Personal Habits",
-    habits: [
-      makeHabit("Wake up early", null, 4),
-      makeHabit("Workout", 30, 5),
-      makeHabit("Jogging", 30, 4),
-      makeHabit("Write", 100, 6),
-    ],
-    collapsed: false,
-  },
-];
-
 export const makeSection = (name: string): Section => ({
   id: uid(),
   name,

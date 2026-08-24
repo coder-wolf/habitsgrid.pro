@@ -19,11 +19,14 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, ChevronRight, ChevronDown } from "lucide-react";
+import { toast } from "sonner";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { AuthDialog } from "@/components/auth-dialog";
+import { useAuth } from "@/lib/auth";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import {
   cellKey,
   daysInMonth,
-  defaultSections,
   habitColorClass,
   makeHabit,
   makeSection,
@@ -139,36 +142,121 @@ function InlineEdit({
 
 function Index() {
   const today = useMemo(() => new Date(), []);
+  const { user, loading: authLoading, signOut } = useAuth();
   const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [state, setState] = useState<State>({ sections: [], completions: {} });
-  const [loaded, setLoaded] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  const [authOpen, setAuthOpen] = useState(false);
+
+  const stateRef = useRef<State>({ sections: [], completions: {} });
+  const cloudReadyRef = useRef<string | null>(null);
+  const lastSyncErrorRef = useRef<string | null>(null);
+
+  const authResolved = !authLoading;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
+  // Cloud-first lifecycle: fetch on login, clear on logout.
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as State;
-        setState({ sections: parsed.sections ?? [], completions: parsed.completions ?? {} });
-      } else {
-        setState({ sections: defaultSections(), completions: {} });
-      }
-    } catch {
-      setState({ sections: defaultSections(), completions: {} });
+    if (!authResolved) return;
+
+    if (!user) {
+      setState({ sections: [], completions: {} });
+      cloudReadyRef.current = null;
+      localStorage.removeItem(STORAGE_KEY);
+      return;
     }
-    setLoaded(true);
-  }, []);
+
+    const client = supabase;
+    if (!client) return;
+
+    const uid = user.id;
+    let cancelled = false;
+    cloudReadyRef.current = null;
+
+    (async () => {
+      try {
+        const { data, error } = await client
+          .from("user_state")
+          .select("data")
+          .eq("user_id", uid)
+          .maybeSingle();
+        if (cancelled) return;
+        if (error) throw error;
+
+        const remote = (data?.data ?? null) as Partial<State> | null;
+        if (remote && Array.isArray(remote.sections)) {
+          setState({ sections: remote.sections, completions: remote.completions ?? {} });
+        } else {
+          // First time on this device: seed cloud from localStorage if it has data.
+          const local = (() => {
+            try {
+              const raw = localStorage.getItem(STORAGE_KEY);
+              if (raw) {
+                const parsed = JSON.parse(raw) as State;
+                if (parsed.sections?.length) return parsed;
+              }
+            } catch {
+              /* ignore */
+            }
+            return null;
+          })();
+
+          if (local) {
+            setState(local);
+            const seeded = await client.from("user_state").upsert({ user_id: uid, data: local });
+            if (seeded.error) throw seeded.error;
+          }
+        }
+        cloudReadyRef.current = uid;
+      } catch (err) {
+        console.error(err);
+        if (!cancelled) toast.error("Could not load your synced habits.");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, authResolved]);
+
+  // Cache state to localStorage while signed in.
+  useEffect(() => {
+    if (!authResolved || !user) return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }, [state, authResolved, user]);
 
   useEffect(() => {
-    if (!loaded) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state, loaded]);
+    stateRef.current = state;
+  }, [state]);
+
+  // Debounced push of local changes to the cloud.
+  useEffect(() => {
+    const client = supabase;
+    if (!client || !user || !authResolved) return;
+    if (cloudReadyRef.current !== user.id) return;
+    const t = setTimeout(() => {
+      void client
+        .from("user_state")
+        .upsert({ user_id: user.id, data: state })
+        .then(({ error }) => {
+          if (!error) {
+            lastSyncErrorRef.current = null;
+            return;
+          }
+          console.error("Cloud sync failed:", error.message);
+          if (lastSyncErrorRef.current !== error.message) {
+            lastSyncErrorRef.current = error.message;
+            toast.error(`Cloud sync failed: ${error.message}`);
+          }
+        });
+    }, 800);
+    return () => clearTimeout(t);
+  }, [state, user, authResolved]);
 
   const month = monthKey(cursor);
   const dayCount = daysInMonth(cursor);
@@ -363,27 +451,58 @@ function Index() {
                 : `${allHabits.length} habits tracked`}
             </p>
           </div>
-          <div className="flex items-center gap-1 rounded-md border border-border bg-surface p-1">
-            <button
-              onClick={() => shiftMonth(-1)}
-              aria-label="Previous month"
-              className="rounded px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-            >
-              ‹
-            </button>
-            <button
-              onClick={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
-              className="rounded px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-            >
-              Today
-            </button>
-            <button
-              onClick={() => shiftMonth(1)}
-              aria-label="Next month"
-              className="rounded px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-            >
-              ›
-            </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 rounded-md border border-border bg-surface p-1">
+              <button
+                onClick={() => shiftMonth(-1)}
+                aria-label="Previous month"
+                className="rounded px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                ‹
+              </button>
+              <button
+                onClick={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
+                className="rounded px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                Today
+              </button>
+              <button
+                onClick={() => shiftMonth(1)}
+                aria-label="Next month"
+                className="rounded px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                ›
+              </button>
+            </div>
+            {user ? (
+              <div className="flex items-center gap-2 rounded-md border border-border bg-surface px-2.5 py-1.5">
+                <span
+                  title={user.email}
+                  className="max-w-[160px] truncate font-mono text-[11px] text-muted-foreground"
+                >
+                  {user.email}
+                </span>
+                <button
+                  onClick={() => {
+                    void signOut().then(() =>
+                      toast.success("Signed out — your habits are safely in the cloud."),
+                    );
+                  }}
+                  className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAuthOpen(true)}
+                disabled={!isSupabaseConfigured}
+                title={isSupabaseConfigured ? undefined : "Cloud sync is not configured"}
+                className="rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Sign in
+              </button>
+            )}
           </div>
         </header>
 
@@ -455,9 +574,12 @@ function Index() {
         </DndContext>
 
         <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-          Drag to reorder · Click cells to tick · Click group names to rename · saved on this device
+          {user
+            ? "Drag to reorder · Click cells to tick · Synced to your account"
+            : "Drag to reorder · Click cells to tick · Sign in to sync"}
         </p>
       </div>
+      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
     </div>
   );
 }
