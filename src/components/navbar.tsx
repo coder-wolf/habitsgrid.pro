@@ -113,7 +113,11 @@ export function Navbar({
                 >
                   {user.email}
                 </span>
-                {!isPro && (
+                {isPro ? (
+                  <span className="rounded bg-primary px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-primary-foreground">
+                    Pro
+                  </span>
+                ) : (
                   <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-primary">
                     Free
                   </span>
