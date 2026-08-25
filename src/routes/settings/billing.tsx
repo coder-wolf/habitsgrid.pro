@@ -8,6 +8,12 @@ import { Cloud, ArrowLeft, ExternalLink, Check, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/settings/billing")({
+  head: () => ({
+    meta: [
+      { title: "Billing — Habit Grid" },
+      { name: "description", content: "Manage your Habit Grid subscription and plan." },
+    ],
+  }),
   component: BillingPage,
 });
 
