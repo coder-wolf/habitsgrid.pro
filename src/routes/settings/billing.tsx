@@ -146,7 +146,7 @@ function BillingPage() {
 
           {/* Features Comparison */}
           <div className="rounded-lg border border-border bg-surface p-6">
-            <h2 className="text-sm font-medium text-foreground">Plan Features</h2>
+            <h2 className="text-sm font-medium text-foreground">Pro Features</h2>
             <div className="mt-4 space-y-3">
               <div className="flex items-center gap-3">
                 <Cloud className="size-4 text-muted-foreground" />
