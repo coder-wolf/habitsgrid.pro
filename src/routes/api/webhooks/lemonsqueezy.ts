@@ -61,23 +61,25 @@ export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
 
           // Try to get user_id from custom_data
           let userId = attrs?.custom_data?.user_id;
+          console.log(`[Webhook] custom_data.user_id from payload: ${userId ?? "MISSING"}`);
 
           // If not in custom_data, fetch subscription details from LemonSqueezy API
           if (!userId) {
             const apiKey = process.env["LEMONSQUEEZY_API_KEY"];
+            console.log(`[Webhook] API key available: ${!!apiKey}`);
             if (apiKey) {
               try {
-                const res = await fetch(
-                  `https://api.lemonsqueezy.com/v1/subscriptions/${event.data.id}`,
-                  { headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" } },
-                );
-                if (res.ok) {
-                  const json = await res.json();
-                  userId = json.data?.attributes?.custom_data?.user_id;
-                  console.log(`[Webhook] Fetched custom_data from API:`, JSON.stringify(json.data?.attributes?.custom_data));
-                }
+                const apiUrl = `https://api.lemonsqueezy.com/v1/subscriptions/${event.data.id}`;
+                console.log(`[Webhook] Fetching: ${apiUrl}`);
+                const res = await fetch(apiUrl, {
+                  headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
+                });
+                console.log(`[Webhook] API response status: ${res.status}`);
+                const json = await res.json();
+                console.log(`[Webhook] API custom_data:`, JSON.stringify(json.data?.attributes?.custom_data));
+                userId = json.data?.attributes?.custom_data?.user_id;
               } catch (e) {
-                console.error("[Webhook] Failed to fetch subscription from API:", e);
+                console.error("[Webhook] API fetch failed:", e);
               }
             }
           }
