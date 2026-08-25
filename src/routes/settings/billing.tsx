@@ -3,9 +3,21 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { UpgradeDialog } from "@/components/upgrade-dialog";
 import { createCheckoutSession } from "@/lib/checkout";
+import { cancelSubscription } from "@/lib/cancel-subscription";
 import { toast } from "sonner";
 import { Cloud, ArrowLeft, ExternalLink, Check, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/settings/billing")({
   head: () => ({
@@ -21,6 +33,7 @@ function BillingPage() {
   const { user, subscription, isPro, loading, refresh } = useAuth();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   // After payment redirect, webhook links via meta.custom_data.user_id (email-independent) — poll until active
   useEffect(() => {
@@ -70,6 +83,21 @@ function BillingPage() {
       toast.error(error instanceof Error ? error.message : "Failed to start checkout.");
     } finally {
       setLoadingCheckout(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!user) return;
+    setCancelling(true);
+    try {
+      const result = await cancelSubscription({ data: { userId: user.id } });
+      await refresh();
+      const endsAt = result?.ends_at ? new Date(result.ends_at).toLocaleDateString() : null;
+      toast.success(endsAt ? `Subscription cancelled. Access until ${endsAt}.` : "Subscription cancelled.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to cancel subscription.");
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -180,16 +208,39 @@ function BillingPage() {
                 <ExternalLink className="size-4" />
                 {loadingCheckout ? "Redirecting..." : "Upgrade to Pro"}
               </button>
-            ) : (
-              <button
-                onClick={() => {
-                  toast.info("Contact support to manage your subscription.");
-                }}
-                className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-              >
-                Manage Subscription
-              </button>
-            )}
+            ) : isActive ? (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    disabled={cancelling}
+                    className="inline-flex items-center gap-2 rounded-md border border-destructive/30 bg-surface px-4 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+                  >
+                    {cancelling ? "Cancelling..." : "Cancel Subscription"}
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Cancel subscription?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Your Pro access will remain until the end of the current billing period
+                      {subscription?.expires_at || subscription?.renews_at
+                        ? ` (${new Date((subscription.expires_at || subscription.renews_at)!).toLocaleDateString()})`
+                        : ""}
+                      . It will be cancelled on LemonSqueezy as well.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Keep Pro</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleCancel}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Confirm Cancel
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ) : null}
             <button
               onClick={() => {
                 void refresh().then(() => toast.success("Refreshed subscription status."));
