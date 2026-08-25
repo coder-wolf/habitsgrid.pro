@@ -81,6 +81,7 @@ export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
           console.log(`[Webhook] Event: ${eventName}, id: ${event.data?.id}`);
           console.log(`[Webhook] meta.custom_data:`, JSON.stringify((event.meta as unknown as Record<string, unknown>)?.custom_data));
           console.log(`[Webhook] attrs.custom_data:`, JSON.stringify(attrs?.custom_data));
+          console.log(`[Webhook] attrs.status:`, attrs?.status, `subscription_id:`, attrs?.subscription_id);
 
           if (!supabase) {
             console.error("[Webhook] Supabase not configured");
@@ -128,7 +129,13 @@ export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
             });
           }
 
-          const status = mapStatus(attrs.status);
+          // subscription_payment_success carries invoice status (e.g. "paid"), not subscription status — treat as active
+          let rawStatus = attrs.status;
+          if (eventName === "subscription_payment_success" && rawStatus !== "active") {
+            rawStatus = "active";
+            console.log(`[Webhook] Overriding status for ${eventName} to active`);
+          }
+          const status = mapStatus(rawStatus);
           const lemonSqueezyId = String(attrs?.subscription_id || event.data.id);
 
           const { error } = await supabase.from("subscriptions").upsert(
