@@ -26,12 +26,16 @@ function BillingPage() {
   // After payment redirect, sync subscription from LemonSqueezy API
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("upgraded") === "true" && user) {
+    const upgraded = params.get("upgraded") === "true";
+    const uid = params.get("uid");
+    if (upgraded && user) {
       let cancelled = false;
       const sync = async () => {
         try {
+          // Use uid from URL if available (email-independent), otherwise use user's email
+          const userId = uid || user.id;
           const result = await syncSubscriptionFromLemonSqueezy({
-            data: { userId: user.id, email: user.email },
+            data: { userId, email: user.email },
           });
           if (cancelled) return;
           if (result?.success) {

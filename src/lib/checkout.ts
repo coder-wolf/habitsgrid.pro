@@ -50,7 +50,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
               },
             },
             product_options: {
-              redirect_url: `${origin}/settings/billing?upgraded=true`,
+              redirect_url: `${origin}/settings/billing?upgraded=true&uid=${data.userId}`,
             },
           },
           relationships: {
