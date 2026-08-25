@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SettingsBillingRouteImport } from './routes/settings/billing'
+import { Route as ApiWebhooksLemonsqueezyRouteImport } from './routes/api/webhooks/lemonsqueezy'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsBillingRoute = SettingsBillingRouteImport.update({
+  id: '/settings/billing',
+  path: '/settings/billing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWebhooksLemonsqueezyRoute = ApiWebhooksLemonsqueezyRouteImport.update({
+  id: '/api/webhooks/lemonsqueezy',
+  path: '/api/webhooks/lemonsqueezy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/settings/billing': typeof SettingsBillingRoute
+  '/api/webhooks/lemonsqueezy': typeof ApiWebhooksLemonsqueezyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/settings/billing': typeof SettingsBillingRoute
+  '/api/webhooks/lemonsqueezy': typeof ApiWebhooksLemonsqueezyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/settings/billing': typeof SettingsBillingRoute
+  '/api/webhooks/lemonsqueezy': typeof ApiWebhooksLemonsqueezyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/settings/billing' | '/api/webhooks/lemonsqueezy'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/settings/billing' | '/api/webhooks/lemonsqueezy'
+  id: '__root__' | '/' | '/settings/billing' | '/api/webhooks/lemonsqueezy'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SettingsBillingRoute: typeof SettingsBillingRoute
+  ApiWebhooksLemonsqueezyRoute: typeof ApiWebhooksLemonsqueezyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/billing': {
+      id: '/settings/billing'
+      path: '/settings/billing'
+      fullPath: '/settings/billing'
+      preLoaderRoute: typeof SettingsBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhooks/lemonsqueezy': {
+      id: '/api/webhooks/lemonsqueezy'
+      path: '/api/webhooks/lemonsqueezy'
+      fullPath: '/api/webhooks/lemonsqueezy'
+      preLoaderRoute: typeof ApiWebhooksLemonsqueezyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SettingsBillingRoute: SettingsBillingRoute,
+  ApiWebhooksLemonsqueezyRoute: ApiWebhooksLemonsqueezyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

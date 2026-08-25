@@ -1,4 +1,15 @@
-import { Sun, Cloud, Sunset, TreePine, Flower2, Orbit, Droplets, Disc, Cookie, Heart } from "lucide-react";
+import {
+  Sun,
+  Cloud,
+  Sunset,
+  TreePine,
+  Flower2,
+  Orbit,
+  Droplets,
+  Disc,
+  Cookie,
+  Heart,
+} from "lucide-react";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { THEMES, useTheme, type Theme } from "@/lib/theme";
 
@@ -22,7 +33,11 @@ function ThemeButton({
   t,
   current,
   onSelect,
-}: { t: Theme; current: Theme; onSelect: (t: Theme) => void }) {
+}: {
+  t: Theme;
+  current: Theme;
+  onSelect: (t: Theme) => void;
+}) {
   const { label, icon: Icon } = themeConfig[t];
   return (
     <PopoverClose asChild>

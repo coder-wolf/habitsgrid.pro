@@ -21,9 +21,10 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, ChevronRight, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ThemeSwitcher } from "@/components/theme-switcher";
+import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/lib/auth";
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
+import { UpgradeDialog } from "@/components/upgrade-dialog";
 import {
   cellKey,
   daysInMonth,
@@ -142,11 +143,12 @@ function InlineEdit({
 
 function Index() {
   const today = useMemo(() => new Date(), []);
-  const { user, loading: authLoading, signOut, signInWithGoogle } = useAuth();
+  const { user, loading: authLoading, isPro } = useAuth();
   const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [state, setState] = useState<State>({ sections: [], completions: {} });
   const [adding, setAdding] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const stateRef = useRef<State>({ sections: [], completions: {} });
   const cloudReadyRef = useRef<string | null>(null);
@@ -159,7 +161,7 @@ function Index() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  // Cloud-first lifecycle: fetch on login, clear on logout.
+  // Cloud-first lifecycle: fetch on login, clear on logout. Requires Pro subscription.
   useEffect(() => {
     if (!authResolved) return;
 
@@ -167,6 +169,26 @@ function Index() {
       setState({ sections: [], completions: {} });
       cloudReadyRef.current = null;
       localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+
+    // Free users stay on localStorage only
+    if (!isPro) {
+      cloudReadyRef.current = null;
+      // Load from localStorage for free users
+      const local = (() => {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw) as State;
+            if (parsed.sections?.length) return parsed;
+          }
+        } catch {
+          /* ignore */
+        }
+        return null;
+      })();
+      if (local) setState(local);
       return;
     }
 
@@ -221,7 +243,7 @@ function Index() {
     return () => {
       cancelled = true;
     };
-  }, [user, authResolved]);
+  }, [user, authResolved, isPro]);
 
   // Cache state to localStorage while signed in.
   useEffect(() => {
@@ -233,10 +255,10 @@ function Index() {
     stateRef.current = state;
   }, [state]);
 
-  // Debounced push of local changes to the cloud.
+  // Debounced push of local changes to the cloud (Pro only).
   useEffect(() => {
     const client = supabase;
-    if (!client || !user || !authResolved) return;
+    if (!client || !user || !authResolved || !isPro) return;
     if (cloudReadyRef.current !== user.id) return;
     const t = setTimeout(() => {
       void client
@@ -255,7 +277,7 @@ function Index() {
         });
     }, 800);
     return () => clearTimeout(t);
-  }, [state, user, authResolved]);
+  }, [state, user, authResolved, isPro]);
 
   const month = monthKey(cursor);
   const dayCount = daysInMonth(cursor);
@@ -435,97 +457,16 @@ function Index() {
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
+      <Navbar
+        cursor={cursor}
+        today={today}
+        isCurrentMonth={isCurrentMonth}
+        habitCount={allHabits.length}
+        doneToday={doneToday}
+        onShiftMonth={shiftMonth}
+        onToday={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
+      />
       <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-8">
-        <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-              Habit Grid
-            </p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-              {cursor.toLocaleString("en-US", { month: "long" })} {cursor.getFullYear()}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {isCurrentMonth
-                ? `${doneToday} of ${allHabits.length} habits ticked today`
-                : `${allHabits.length} habits tracked`}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 rounded-md border border-border bg-surface p-1">
-              <button
-                onClick={() => shiftMonth(-1)}
-                aria-label="Previous month"
-                className="rounded px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              >
-                ‹
-              </button>
-              <button
-                onClick={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
-                className="rounded px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              >
-                Today
-              </button>
-              <button
-                onClick={() => shiftMonth(1)}
-                aria-label="Next month"
-                className="rounded px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              >
-                ›
-              </button>
-            </div>
-            <ThemeSwitcher />
-            {user ? (
-              <div className="flex items-center gap-2 rounded-md border border-border bg-surface px-2.5 py-1.5">
-                <span
-                  title={user.email}
-                  className="max-w-[160px] truncate font-mono text-[11px] text-muted-foreground"
-                >
-                  {user.email}
-                </span>
-                <button
-                  onClick={() => {
-                    void signOut().then(() =>
-                      toast.success("Signed out — your habits are safely in the cloud."),
-                    );
-                  }}
-                  className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Sign out
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => {
-                  void signInWithGoogle();
-                }}
-                disabled={!isSupabaseConfigured}
-                title={isSupabaseConfigured ? undefined : "Cloud sync is not configured"}
-                className="flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <svg className="size-3" viewBox="0 0 24 24">
-                  <path
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
-                    fill="#4285F4"
-                  />
-                  <path
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    fill="#34A853"
-                  />
-                  <path
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    fill="#FBBC05"
-                  />
-                  <path
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    fill="#EA4335"
-                  />
-                </svg>
-                Sign in with Google
-              </button>
-            )}
-          </div>
-        </header>
-
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <div className="overflow-x-auto rounded-lg border border-grid-line bg-surface shadow-sm">
             <table className="table-fixed border-collapse text-left">
@@ -595,10 +536,21 @@ function Index() {
 
         <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
           {user
-            ? "Drag to reorder · Click cells to tick · Synced to your account"
+            ? isPro
+              ? "Drag to reorder · Click cells to tick · Synced to your account"
+              : "Drag to reorder · Click cells to tick · "
             : "Drag to reorder · Click cells to tick · Sign in to sync"}
+          {user && !isPro && (
+            <button
+              onClick={() => setUpgradeOpen(true)}
+              className="ml-1 text-primary transition-colors hover:underline"
+            >
+              Upgrade for cloud sync
+            </button>
+          )}
         </p>
       </div>
+      <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </div>
   );
 }
