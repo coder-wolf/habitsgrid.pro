@@ -2,8 +2,9 @@
 CREATE TABLE IF NOT EXISTS subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT,
   lemon_squeezy_id TEXT UNIQUE NOT NULL,
-  status TEXT NOT NULL DEFAULT 'inactive' CHECK (status IN ('active', 'cancelled', 'expired', 'inactive')),
+  status TEXT NOT NULL DEFAULT 'inactive' CHECK (status IN ('active', 'cancelled', 'expired', 'inactive', 'pending')),
   plan_id TEXT NOT NULL,
   variant_id TEXT NOT NULL,
   renews_at TIMESTAMPTZ,

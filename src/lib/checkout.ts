@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
+import { supabase } from "@/lib/supabase";
 
 export const createCheckoutSession = createServerFn({ method: "POST" })
   .validator((data: { userId: string; email: string }) => data)
@@ -10,6 +11,22 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
     if (!LEMONSQUEEZY_API_KEY || !LEMONSQUEEZY_STORE_ID || !LEMONSQUEEZY_VARIANT_ID) {
       throw new Error("LemonSqueezy is not configured.");
+    }
+
+    // Store pending subscription with user_id and email for webhook matching
+    if (supabase) {
+      const pendingId = `pending-${crypto.randomUUID()}`;
+      await supabase.from("subscriptions").upsert(
+        {
+          user_id: data.userId,
+          email: data.email,
+          lemon_squeezy_id: pendingId,
+          status: "pending",
+          plan_id: "0",
+          variant_id: "0",
+        },
+        { onConflict: "user_id" },
+      );
     }
 
     const request = getRequest();

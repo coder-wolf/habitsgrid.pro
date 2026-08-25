@@ -39,6 +39,34 @@ function mapStatus(lsStatus: string): string {
   }
 }
 
+async function fetchCustomerEmail(
+  apiKey: string,
+  subscriptionId: string,
+): Promise<string | null> {
+  try {
+    // Get subscription to find customer_id
+    const subRes = await fetch(
+      `https://api.lemonsqueezy.com/v1/subscriptions/${subscriptionId}`,
+      { headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" } },
+    );
+    if (!subRes.ok) return null;
+    const subJson = await subRes.json();
+    const customerId = subJson.data?.attributes?.customer_id;
+    if (!customerId) return null;
+
+    // Get customer email
+    const custRes = await fetch(
+      `https://api.lemonsqueezy.com/v1/customers/${customerId}`,
+      { headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" } },
+    );
+    if (!custRes.ok) return null;
+    const custJson = await custRes.json();
+    return custJson.data?.attributes?.email ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
   server: {
     handlers: {
@@ -50,7 +78,6 @@ export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
           const attrs = event.data?.attributes;
 
           console.log(`[Webhook] Event: ${eventName}, id: ${event.data?.id}`);
-          console.log(`[Webhook] custom_data:`, JSON.stringify(attrs?.custom_data));
 
           if (!supabase) {
             console.error("[Webhook] Supabase not configured");
@@ -60,40 +87,28 @@ export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
             });
           }
 
-          // Try to get user_id from custom_data
+          // Step 1: Try custom_data from payload
           let userId = attrs?.custom_data?.user_id;
-          console.log(`[Webhook] custom_data.user_id from payload: ${userId ?? "MISSING"}`);
 
-          // If not in custom_data, fetch subscription details from LemonSqueezy API
+          // Step 2: Look up pending subscription by email from LemonSqueezy API
           if (!userId) {
             const apiKey = process.env["LEMONSQUEEZY_API_KEY"];
-            console.log(`[Webhook] API key available: ${!!apiKey}`);
             if (apiKey) {
-              try {
-                const subscriptionId = attrs.subscription_id || event.data.id;
-                const apiUrl = `https://api.lemonsqueezy.com/v1/subscriptions/${subscriptionId}`;
-                console.log(`[Webhook] Fetching: ${apiUrl}`);
-                const res = await fetch(apiUrl, {
-                  headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
-                });
-                console.log(`[Webhook] API response status: ${res.status}`);
-                const json = await res.json();
-                console.log(`[Webhook] API custom_data:`, JSON.stringify(json.data?.attributes?.custom_data));
-                userId = json.data?.attributes?.custom_data?.user_id;
-              } catch (e) {
-                console.error("[Webhook] API fetch failed:", e);
+              const subId = String(attrs?.subscription_id || event.data.id);
+              const email = await fetchCustomerEmail(apiKey, subId);
+              console.log(`[Webhook] Customer email from API: ${email}`);
+
+              if (email) {
+                const { data: pending } = await supabase
+                  .from("subscriptions")
+                  .select("user_id")
+                  .eq("email", email)
+                  .eq("status", "pending")
+                  .maybeSingle();
+                userId = pending?.user_id;
+                console.log(`[Webhook] Found user_id from email: ${userId ?? "NONE"}`);
               }
             }
-          }
-
-          // If still no user_id, look up existing subscription in our DB
-          if (!userId) {
-            const { data: existing } = await supabase
-              .from("subscriptions")
-              .select("user_id")
-              .eq("lemon_squeezy_id", event.data.id)
-              .maybeSingle();
-            userId = existing?.user_id;
           }
 
           if (!userId) {
