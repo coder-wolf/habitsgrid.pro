@@ -36,22 +36,7 @@ export function Navbar({
       <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4 sm:px-8">
         {/* Left: Logo + Title */}
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 shadow-sm">
-            <svg className="size-4" viewBox="0 0 16 16" fill="none">
-              <rect x="1" y="1" width="4" height="4" rx="1" fill="white" opacity="0.9" />
-              <rect x="6" y="1" width="4" height="4" rx="1" fill="white" opacity="0.4" />
-              <rect x="11" y="1" width="4" height="4" rx="1" fill="white" opacity="0.9" />
-              <rect x="1" y="6" width="4" height="4" rx="1" fill="white" opacity="0.4" />
-              <rect x="6" y="6" width="4" height="4" rx="1" fill="white" opacity="0.9" />
-              <rect x="11" y="6" width="4" height="4" rx="1" fill="white" opacity="0.4" />
-              <rect x="1" y="11" width="4" height="4" rx="1" fill="white" opacity="0.9" />
-              <rect x="6" y="11" width="4" height="4" rx="1" fill="white" opacity="0.4" />
-              <rect x="11" y="11" width="4" height="4" rx="1" fill="white" opacity="0.9" />
-            </svg>
-          </div>
-          <span className="text-base font-semibold tracking-tight text-foreground">
-            Habit<span className="text-indigo-500">Grid</span>
-          </span>
+          <span className="text-lg font-bold tracking-tight text-foreground">Habit Grid</span>
         </Link>
 
         {/* Center: Month Navigation */}
