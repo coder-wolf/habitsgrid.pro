@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { UpgradeDialog } from "@/components/upgrade-dialog";
 import { createCheckoutSession } from "@/lib/checkout";
@@ -21,6 +21,30 @@ function BillingPage() {
   const { user, subscription, isPro, loading, refresh } = useAuth();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
+
+  // After payment redirect, refresh subscription with retries
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgraded") === "true" && user) {
+      // Webhook might take a moment, so retry
+      let attempts = 0;
+      const maxAttempts = 5;
+      const tryRefresh = async () => {
+        await refresh();
+        attempts++;
+        if (!isPro && attempts < maxAttempts) {
+          setTimeout(tryRefresh, 2000);
+        } else if (isPro) {
+          toast.success("Welcome to Pro! Cloud sync is now active.");
+          window.history.replaceState({}, "", "/settings/billing");
+        } else {
+          toast.info("Payment received. It may take a moment to activate.");
+          window.history.replaceState({}, "", "/settings/billing");
+        }
+      };
+      setTimeout(tryRefresh, 1500);
+    }
+  }, [user]);
 
   const handleUpgrade = async () => {
     if (!user) {
@@ -157,6 +181,14 @@ function BillingPage() {
                 Manage Subscription
               </button>
             )}
+            <button
+              onClick={() => {
+                void refresh().then(() => toast.success("Refreshed subscription status."));
+              }}
+              className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+            >
+              Refresh
+            </button>
           </div>
         </div>
       </div>

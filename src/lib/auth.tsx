@@ -37,16 +37,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabase) return;
     setSubLoading(true);
     try {
+      console.log("[Auth] Fetching subscription for user:", userId);
       const { data, error } = await supabase
         .from("subscriptions")
         .select("*")
         .eq("user_id", userId)
         .maybeSingle();
-      if (!error) {
-        setSubscription(data as Subscription | null);
+      if (error) {
+        console.error("[Auth] Subscription fetch error:", error.message, error.code);
+      } else {
+        console.log("[Auth] Subscription result:", data);
       }
-    } catch {
-      // Subscription table may not exist yet
+      setSubscription((data as Subscription | null) ?? null);
+    } catch (e) {
+      console.error("[Auth] Subscription fetch exception:", e);
       setSubscription(null);
     } finally {
       setSubLoading(false);
