@@ -42,13 +42,13 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Habit Grid — Track Daily Habits" },
+      { title: "Habits Grid — Track Daily Habits" },
       {
         name: "description",
         content:
           "A spreadsheet-style habit tracker: every habit is a row, every day a column. Tick cells, watch streak counts and monthly goal progress fill in.",
       },
-      { property: "og:title", content: "Habit Grid — Track Daily Habits" },
+      { property: "og:title", content: "Habits Grid — Track Daily Habits" },
       {
         property: "og:description",
         content:

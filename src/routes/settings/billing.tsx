@@ -10,8 +10,8 @@ import { Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/settings/billing")({
   head: () => ({
     meta: [
-      { title: "Billing — Habit Grid" },
-      { name: "description", content: "Manage your Habit Grid subscription and plan." },
+      { title: "Billing — Habits Grid" },
+      { name: "description", content: "Manage your Habits Grid subscription and plan." },
     ],
   }),
   component: BillingPage,

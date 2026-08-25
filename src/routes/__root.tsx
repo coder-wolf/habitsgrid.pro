@@ -81,10 +81,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Habit Grid" },
-      { name: "description", content: "Track daily habits with a spreadsheet-style grid. Tick cells, watch streaks grow, and build consistency." },
-      { property: "og:title", content: "Habit Grid" },
-      { property: "og:description", content: "Track daily habits with a spreadsheet-style grid. Tick cells, watch streaks grow, and build consistency." },
+      { title: "Habits Grid" },
+      {
+        name: "description",
+        content:
+          "Track daily habits with a spreadsheet-style grid. Tick cells, watch streaks grow, and build consistency.",
+      },
+      { property: "og:title", content: "Habits Grid" },
+      {
+        property: "og:description",
+        content:
+          "Track daily habits with a spreadsheet-style grid. Tick cells, watch streaks grow, and build consistency.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

@@ -36,7 +36,7 @@ export function Navbar({
       <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4 sm:px-8">
         {/* Left: Logo + Title */}
         <Link to="/" className="flex items-center gap-2.5">
-          <span className="text-lg font-bold tracking-tight text-foreground">Habit Grid</span>
+          <span className="text-lg font-bold tracking-tight text-foreground">Habits Grid</span>
         </Link>
 
         {/* Center: Month Navigation */}
