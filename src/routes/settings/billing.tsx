@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { UpgradeDialog } from "@/components/upgrade-dialog";
 import { createCheckoutSession } from "@/lib/checkout";
-import { syncSubscriptionFromLemonSqueezy } from "@/lib/sync-subscription";
 import { toast } from "sonner";
 import { Cloud, ArrowLeft, ExternalLink, Check, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
@@ -23,36 +22,38 @@ function BillingPage() {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
 
-  // After payment redirect, sync subscription from LemonSqueezy API
+  // After payment redirect, webhook links via meta.custom_data.user_id (email-independent) — poll until active
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const upgraded = params.get("upgraded") === "true";
-    const uid = params.get("uid");
-    if (upgraded && user) {
-      let cancelled = false;
-      const sync = async () => {
-        try {
-          // Use uid from URL if available (email-independent), otherwise use user's email
-          const userId = uid || user.id;
-          const result = await syncSubscriptionFromLemonSqueezy({
-            data: { userId, email: user.email },
-          });
-          if (cancelled) return;
-          if (result?.success) {
-            await refresh();
-            toast.success("Welcome to Pro! Cloud sync is now active.");
-          } else {
-            toast.info("Payment received. It may take a moment to activate.");
-          }
-        } catch {
-          if (!cancelled) toast.info("Payment received. It may take a moment to activate.");
-        }
+    if (params.get("upgraded") !== "true" || !user) return;
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 6;
+    const tryRefresh = async () => {
+      if (cancelled) return;
+      await refresh();
+      attempts++;
+      if (attempts < maxAttempts) {
+        setTimeout(tryRefresh, 2000);
+      } else {
         window.history.replaceState({}, "", "/settings/billing");
-      };
-      sync();
-      return () => { cancelled = true; };
-    }
+      }
+    };
+    const t = setTimeout(tryRefresh, 1500);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
   }, [user]);
+
+  // Show success toast when isPro becomes true after upgrade
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgraded") === "true" && isPro) {
+      toast.success("Welcome to Pro! Cloud sync is now active.");
+      window.history.replaceState({}, "", "/settings/billing");
+    }
+  }, [isPro]);
 
   const handleUpgrade = async () => {
     if (!user) {

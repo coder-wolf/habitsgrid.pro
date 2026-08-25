@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 type LemonSqueezyEvent = {
   meta: {
     event_name: string;
+    custom_data?: Record<string, string>;
   };
   data: {
     id: string;
@@ -78,6 +79,8 @@ export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
           const attrs = event.data?.attributes;
 
           console.log(`[Webhook] Event: ${eventName}, id: ${event.data?.id}`);
+          console.log(`[Webhook] meta.custom_data:`, JSON.stringify((event.meta as unknown as Record<string, unknown>)?.custom_data));
+          console.log(`[Webhook] attrs.custom_data:`, JSON.stringify(attrs?.custom_data));
 
           if (!supabase) {
             console.error("[Webhook] Supabase not configured");
@@ -87,10 +90,16 @@ export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
             });
           }
 
-          // Step 1: Try custom_data from payload
-          let userId = attrs?.custom_data?.user_id;
+          // Step 1: Try custom_data from meta (LemonSqueezy puts checkout custom there) - user_id based, email-independent
+          let userId =
+            (event.meta as unknown as { custom_data?: Record<string, string> })?.custom_data?.user_id ??
+            attrs?.custom_data?.user_id;
 
-          // Step 2: Look up pending subscription by email from LemonSqueezy API
+          if (userId) {
+            console.log(`[Webhook] Found user_id from custom_data: ${userId}`);
+          }
+
+          // Step 2: Fallback - look up pending subscription by email from LemonSqueezy API
           if (!userId) {
             const apiKey = process.env["LEMONSQUEEZY_API_KEY"];
             if (apiKey) {
@@ -106,7 +115,7 @@ export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
                   .eq("status", "pending")
                   .maybeSingle();
                 userId = pending?.user_id;
-                console.log(`[Webhook] Found user_id from email: ${userId ?? "NONE"}`);
+                console.log(`[Webhook] Found user_id from email fallback: ${userId ?? "NONE"}`);
               }
             }
           }
@@ -120,11 +129,13 @@ export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
           }
 
           const status = mapStatus(attrs.status);
+          const lemonSqueezyId = String(attrs?.subscription_id || event.data.id);
 
           const { error } = await supabase.from("subscriptions").upsert(
             {
               user_id: userId,
-              lemon_squeezy_id: event.data.id,
+              lemon_squeezy_id: lemonSqueezyId,
+              email: null,
               status,
               plan_id: String(attrs.product_id),
               variant_id: String(attrs.variant_id),
