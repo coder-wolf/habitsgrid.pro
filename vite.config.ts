@@ -33,6 +33,9 @@ export default defineConfig({
           ],
         },
         workbox: {
+          // TanStack Start is SSR — don't precache (dist is empty on Vercel), disable navigateFallback to avoid "page didn't load"
+          globPatterns: [],
+          navigateFallback: null,
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -46,6 +49,7 @@ export default defineConfig({
             },
           ],
         },
+        devOptions: { enabled: false },
       }),
     ],
   },
