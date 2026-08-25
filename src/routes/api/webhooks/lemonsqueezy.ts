@@ -18,9 +18,7 @@ type LemonSqueezyEvent = {
       expires_at: string | null;
       created_at: string;
       updated_at: string;
-      custom_data?: {
-        user_id?: string;
-      };
+      custom_data?: Record<string, string>;
     };
   };
 };
@@ -50,18 +48,8 @@ export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
           const eventName = event.meta?.event_name;
           const attrs = event.data?.attributes;
 
-          console.log(`[Webhook] Received event: ${eventName}`);
-
-          const userId = attrs?.custom_data?.user_id;
-          if (!userId) {
-            console.error("[Webhook] No user_id in custom_data");
-            return new Response(JSON.stringify({ received: true, reason: "no user_id" }), {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            });
-          }
-
-          const status = mapStatus(attrs.status);
+          console.log(`[Webhook] Event: ${eventName}, id: ${event.data?.id}`);
+          console.log(`[Webhook] custom_data:`, JSON.stringify(attrs?.custom_data));
 
           if (!supabase) {
             console.error("[Webhook] Supabase not configured");
@@ -70,6 +58,49 @@ export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
               headers: { "Content-Type": "application/json" },
             });
           }
+
+          // Try to get user_id from custom_data
+          let userId = attrs?.custom_data?.user_id;
+
+          // If not in custom_data, fetch subscription details from LemonSqueezy API
+          if (!userId) {
+            const apiKey = process.env["LEMONSQUEEZY_API_KEY"];
+            if (apiKey) {
+              try {
+                const res = await fetch(
+                  `https://api.lemonsqueezy.com/v1/subscriptions/${event.data.id}`,
+                  { headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" } },
+                );
+                if (res.ok) {
+                  const json = await res.json();
+                  userId = json.data?.attributes?.custom_data?.user_id;
+                  console.log(`[Webhook] Fetched custom_data from API:`, JSON.stringify(json.data?.attributes?.custom_data));
+                }
+              } catch (e) {
+                console.error("[Webhook] Failed to fetch subscription from API:", e);
+              }
+            }
+          }
+
+          // If still no user_id, look up existing subscription in our DB
+          if (!userId) {
+            const { data: existing } = await supabase
+              .from("subscriptions")
+              .select("user_id")
+              .eq("lemon_squeezy_id", event.data.id)
+              .maybeSingle();
+            userId = existing?.user_id;
+          }
+
+          if (!userId) {
+            console.error("[Webhook] No user_id found — skipping");
+            return new Response(JSON.stringify({ received: true, reason: "no user_id" }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
+          const status = mapStatus(attrs.status);
 
           const { error } = await supabase.from("subscriptions").upsert(
             {
@@ -85,14 +116,14 @@ export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
           );
 
           if (error) {
-            console.error("[Webhook] Supabase error:", error.message);
+            console.error("[Webhook] Supabase error:", error.message, error.code);
             return new Response(JSON.stringify({ error: error.message }), {
               status: 500,
               headers: { "Content-Type": "application/json" },
             });
           }
 
-          console.log(`[Webhook] ${eventName} for user ${userId} -> ${status}`);
+          console.log(`[Webhook] Saved: user ${userId} -> ${status}`);
           return new Response(JSON.stringify({ received: true }), {
             status: 200,
             headers: { "Content-Type": "application/json" },
