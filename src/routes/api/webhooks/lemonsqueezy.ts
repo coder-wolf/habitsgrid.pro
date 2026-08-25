@@ -13,6 +13,7 @@ type LemonSqueezyEvent = {
       order_id: number;
       product_id: number;
       variant_id: number;
+      subscription_id: number | null;
       status: string;
       renews_at: string | null;
       expires_at: string | null;
@@ -69,7 +70,8 @@ export const Route = createFileRoute("/api/webhooks/lemonsqueezy")({
             console.log(`[Webhook] API key available: ${!!apiKey}`);
             if (apiKey) {
               try {
-                const apiUrl = `https://api.lemonsqueezy.com/v1/subscriptions/${event.data.id}`;
+                const subscriptionId = attrs.subscription_id || event.data.id;
+                const apiUrl = `https://api.lemonsqueezy.com/v1/subscriptions/${subscriptionId}`;
                 console.log(`[Webhook] Fetching: ${apiUrl}`);
                 const res = await fetch(apiUrl, {
                   headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
