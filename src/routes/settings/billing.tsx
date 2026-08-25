@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { UpgradeDialog } from "@/components/upgrade-dialog";
 import { createCheckoutSession } from "@/lib/checkout";
+import { syncSubscriptionFromLemonSqueezy } from "@/lib/sync-subscription";
 import { toast } from "sonner";
 import { Cloud, ArrowLeft, ExternalLink, Check, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
@@ -22,27 +23,30 @@ function BillingPage() {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
 
-  // After payment redirect, refresh subscription with retries
+  // After payment redirect, sync subscription from LemonSqueezy API
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("upgraded") === "true" && user) {
-      // Webhook might take a moment, so retry
-      let attempts = 0;
-      const maxAttempts = 5;
-      const tryRefresh = async () => {
-        await refresh();
-        attempts++;
-        if (!isPro && attempts < maxAttempts) {
-          setTimeout(tryRefresh, 2000);
-        } else if (isPro) {
-          toast.success("Welcome to Pro! Cloud sync is now active.");
-          window.history.replaceState({}, "", "/settings/billing");
-        } else {
-          toast.info("Payment received. It may take a moment to activate.");
-          window.history.replaceState({}, "", "/settings/billing");
+      let cancelled = false;
+      const sync = async () => {
+        try {
+          const result = await syncSubscriptionFromLemonSqueezy({
+            data: { userId: user.id, email: user.email },
+          });
+          if (cancelled) return;
+          if (result?.success) {
+            await refresh();
+            toast.success("Welcome to Pro! Cloud sync is now active.");
+          } else {
+            toast.info("Payment received. It may take a moment to activate.");
+          }
+        } catch {
+          if (!cancelled) toast.info("Payment received. It may take a moment to activate.");
         }
+        window.history.replaceState({}, "", "/settings/billing");
       };
-      setTimeout(tryRefresh, 1500);
+      sync();
+      return () => { cancelled = true; };
     }
   }, [user]);
 
