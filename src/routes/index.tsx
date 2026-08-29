@@ -25,6 +25,8 @@ import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { UpgradeDialog } from "@/components/upgrade-dialog";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { OnboardingFlow } from "@/components/onboarding-flow";
 import {
   cellKey,
   daysInMonth,
@@ -155,6 +157,16 @@ function Index() {
   const lastSyncErrorRef = useRef<string | null>(null);
 
   const authResolved = !authLoading;
+
+  // Onboarding is the default for non-Pro users.
+  // demoMode lets free users dismiss it to see the homepage.
+  // Resets on sign-out so fresh visitors always see onboarding.
+  const [demoMode, setDemoMode] = useState(false);
+  const showOnboarding = authResolved && !isPro && !demoMode;
+
+  useEffect(() => {
+    if (authResolved && !user) setDemoMode(false);
+  }, [authResolved, user]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -457,100 +469,120 @@ function Index() {
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
-      <Navbar
-        cursor={cursor}
-        today={today}
-        isCurrentMonth={isCurrentMonth}
-        habitCount={allHabits.length}
-        doneToday={doneToday}
-        onShiftMonth={shiftMonth}
-        onToday={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
-      />
-      <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-8">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="overflow-x-auto rounded-lg border border-grid-line bg-surface shadow-sm">
-            <table className="table-fixed border-collapse text-left">
-              <thead>
-                <tr className="border-b border-grid-line">
-                  <th className="sticky left-0 z-20 w-[240px] bg-secondary pl-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                    Habit
-                  </th>
-                  {days.map((d) => {
-                    const isToday = isCurrentMonth && d === today.getDate();
-                    return (
-                      <th
-                        key={d}
-                        className={`${isToday ? "w-[60px]" : "w-6"} border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
-                          isToday
-                            ? "bg-accent text-accent-foreground border-l-accent border-r-accent"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        <span className="block leading-tight">{d}</span>
-                        <span className="block text-[9px] opacity-50">
-                          {weekdayLabel(cursor.getFullYear(), cursor.getMonth(), d)}
-                        </span>
-                      </th>
-                    );
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                <SortableContext
-                  items={state.sections.map((s) => s.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {state.sections.map((section) => (
-                    <SectionRows
-                      key={section.id}
-                      section={section}
-                      days={days}
-                      month={month}
-                      today={today}
-                      isCurrentMonth={isCurrentMonth}
-                      completions={state.completions}
-                      onToggle={toggle}
-                      onRemove={removeHabit}
-                      onRename={renameHabit}
-                      onRecolor={recolorHabit}
-                      onToggleSection={toggleSection}
-                      onRenameSection={renameSection}
-                      onRemoveSection={removeSection}
-                      adding={adding === section.id}
-                      draft={draft}
-                      setDraft={setDraft}
-                      onStartAdd={() => {
-                        setAdding(section.id);
-                        setDraft("");
-                      }}
-                      onCancelAdd={() => setAdding(null)}
-                      onCommitAdd={() => addHabit(section.id)}
-                    />
-                  ))}
-                </SortableContext>
-                <AddGroupRow onAdd={addSection} />
-              </tbody>
-            </table>
-          </div>
-        </DndContext>
-
-        <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-          {user
-            ? isPro
-              ? "Drag to reorder · Click cells to tick · Synced to your account"
-              : "Drag to reorder · Click cells to tick · "
-            : "Drag to reorder · Click cells to tick · Sign in to sync"}
-          {user && !isPro && (
-            <button
-              onClick={() => setUpgradeOpen(true)}
-              className="ml-1 text-primary transition-colors hover:underline"
+      {showOnboarding ? (
+        <OnboardingFlow onDemo={() => setDemoMode(true)} />
+      ) : (
+        <>
+          <Navbar
+            cursor={cursor}
+            today={today}
+            isCurrentMonth={isCurrentMonth}
+            habitCount={allHabits.length}
+            doneToday={doneToday}
+            onShiftMonth={shiftMonth}
+            onToday={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
+          />
+          <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-8">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              Upgrade for cloud sync
-            </button>
-          )}
-        </p>
-      </div>
-      <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
+              <div className="overflow-x-auto rounded-lg border border-grid-line bg-surface shadow-sm">
+                <table className="table-fixed border-collapse text-left">
+                  <thead>
+                    <tr className="border-b border-grid-line">
+                      <th className="sticky left-0 z-20 w-[240px] bg-secondary pl-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Habit
+                      </th>
+                      {days.map((d) => {
+                        const isToday = isCurrentMonth && d === today.getDate();
+                        return (
+                          <th
+                            key={d}
+                            className={`${isToday ? "w-[60px]" : "w-6"} border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
+                              isToday
+                                ? "bg-accent text-accent-foreground border-l-accent border-r-accent"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            <span className="block leading-tight">{d}</span>
+                            <span className="block text-[9px] opacity-50">
+                              {weekdayLabel(cursor.getFullYear(), cursor.getMonth(), d)}
+                            </span>
+                          </th>
+                        );
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <SortableContext
+                      items={state.sections.map((s) => s.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {state.sections.map((section) => (
+                        <SectionRows
+                          key={section.id}
+                          section={section}
+                          days={days}
+                          month={month}
+                          today={today}
+                          isCurrentMonth={isCurrentMonth}
+                          completions={state.completions}
+                          onToggle={toggle}
+                          onRemove={removeHabit}
+                          onRename={renameHabit}
+                          onRecolor={recolorHabit}
+                          onToggleSection={toggleSection}
+                          onRenameSection={renameSection}
+                          onRemoveSection={removeSection}
+                          adding={adding === section.id}
+                          draft={draft}
+                          setDraft={setDraft}
+                          onStartAdd={() => {
+                            setAdding(section.id);
+                            setDraft("");
+                          }}
+                          onCancelAdd={() => setAdding(null)}
+                          onCommitAdd={() => addHabit(section.id)}
+                        />
+                      ))}
+                    </SortableContext>
+                    <AddGroupRow onAdd={addSection} />
+                  </tbody>
+                </table>
+              </div>
+            </DndContext>
+
+            {!isPro && (
+              <Alert className="mt-4 border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                <AlertTitle>Demo Mode</AlertTitle>
+                <AlertDescription>
+                  Your data is stored locally and will be lost when you close the browser or upgrade
+                  to a Pro account.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              {user
+                ? isPro
+                  ? "Drag to reorder · Click cells to tick · Synced to your account"
+                  : "Drag to reorder · Click cells to tick · "
+                : "Drag to reorder · Click cells to tick · Sign in to sync"}
+              {user && !isPro && (
+                <button
+                  onClick={() => setUpgradeOpen(true)}
+                  className="ml-1 text-primary transition-colors hover:underline"
+                >
+                  Upgrade for cloud sync
+                </button>
+              )}
+            </p>
+          </div>
+          <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
+        </>
+      )}
     </div>
   );
 }

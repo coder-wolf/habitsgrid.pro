@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { UpgradeDialog } from "@/components/upgrade-dialog";
@@ -6,7 +6,6 @@ import { createCheckoutSession } from "@/lib/checkout";
 import { cancelSubscription } from "@/lib/cancel-subscription";
 import { toast } from "sonner";
 import { Cloud, ArrowLeft, ExternalLink, Check, X } from "lucide-react";
-import { Link } from "@tanstack/react-router";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,14 +30,16 @@ export const Route = createFileRoute("/settings/billing")({
 
 function BillingPage() {
   const { user, subscription, isPro, loading, refresh } = useAuth();
+  const navigate = useNavigate();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
-  // After payment redirect, webhook links via meta.custom_data.user_id (email-independent) — poll until active
+  const upgraded = new URLSearchParams(window.location.search).get("upgraded") === "true";
+
+  // After payment redirect, poll until subscription is active
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("upgraded") !== "true" || !user) return;
+    if (!upgraded || !user) return;
     let cancelled = false;
     let attempts = 0;
     const maxAttempts = 6;
@@ -57,49 +58,15 @@ function BillingPage() {
       cancelled = true;
       clearTimeout(t);
     };
-  }, [user]);
+  }, [upgraded, user]);
 
-  // Show success toast when isPro becomes true after upgrade
+  // Once Pro after upgrade, redirect to homepage
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("upgraded") === "true" && isPro) {
+    if (upgraded && isPro) {
       toast.success("Welcome to Pro! Cloud sync is now active.");
-      window.history.replaceState({}, "", "/settings/billing");
+      navigate({ to: "/" });
     }
-  }, [isPro]);
-
-  const handleUpgrade = async () => {
-    if (!user) {
-      toast.error("Please sign in first.");
-      return;
-    }
-    setLoadingCheckout(true);
-    try {
-      const result = await createCheckoutSession({ data: { userId: user.id, email: user.email } });
-      if (result?.url) {
-        window.location.href = result.url;
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to start checkout.");
-    } finally {
-      setLoadingCheckout(false);
-    }
-  };
-
-  const handleCancel = async () => {
-    if (!user) return;
-    setCancelling(true);
-    try {
-      const result = await cancelSubscription({ data: { userId: user.id } });
-      await refresh();
-      const endsAt = result?.ends_at ? new Date(result.ends_at).toLocaleDateString() : null;
-      toast.success(endsAt ? `Subscription cancelled. Access until ${endsAt}.` : "Subscription cancelled.");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to cancel subscription.");
-    } finally {
-      setCancelling(false);
-    }
-  };
+  }, [upgraded, isPro]);
 
   if (loading) {
     return (
@@ -118,15 +85,45 @@ function BillingPage() {
             Please sign in to manage your subscription.
           </p>
           <Link
-            to="/"
+            to="/onboarding"
             className="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            Sign in
           </Link>
         </div>
       </div>
     );
   }
+
+  const handleUpgrade = async () => {
+    setLoadingCheckout(true);
+    try {
+      const result = await createCheckoutSession({ data: { userId: user.id, email: user.email } });
+      if (result?.url) {
+        window.location.href = result.url;
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to start checkout.");
+    } finally {
+      setLoadingCheckout(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    setCancelling(true);
+    try {
+      const result = await cancelSubscription({ data: { userId: user.id } });
+      await refresh();
+      const endsAt = result?.ends_at ? new Date(result.ends_at).toLocaleDateString() : null;
+      toast.success(
+        endsAt ? `Subscription cancelled. Access until ${endsAt}.` : "Subscription cancelled.",
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to cancel subscription.");
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   const statusLabel = subscription?.status ?? "inactive";
   const isActive = statusLabel === "active";

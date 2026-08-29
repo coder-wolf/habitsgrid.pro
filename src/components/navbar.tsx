@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase";
@@ -26,6 +26,7 @@ export function Navbar({
   onToday,
 }: NavbarProps) {
   const { user, isPro, signInWithGoogle, signOut } = useAuth();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const monthLabel = cursor.toLocaleString("en-US", { month: "long" });
@@ -95,6 +96,15 @@ export function Navbar({
           </div>
 
           <ThemeSwitcher />
+
+          {user && !isPro && (
+            <button
+              onClick={() => navigate({ to: "/onboarding" })}
+              className="rounded-md border border-border bg-surface px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              Upgrade
+            </button>
+          )}
 
           {user ? (
             <div className="relative">
