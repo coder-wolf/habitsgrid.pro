@@ -57,7 +57,6 @@ export const Route = createFileRoute("/")({
           "A spreadsheet-style habit tracker: every habit is a row, every day a column. Tick cells and watch your month fill in.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Index,
