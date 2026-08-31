@@ -30,7 +30,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     }
 
     const request = getRequest();
-    const origin = request?.headers.get("origin") ?? "http://localhost:3000";
+    const origin = request?.headers.get("origin") ?? "https://habitsgrid.vercel.app";
 
     const response = await fetch(`https://api.lemonsqueezy.com/v1/checkouts`, {
       method: "POST",
