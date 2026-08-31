@@ -90,9 +90,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Track daily habits with a spreadsheet-style grid. Tick cells, watch streaks grow, and build consistency.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "https://habitsgrid.pro/og.png?v=3" },
+      { property: "og:site_name", content: "Habits Grid" },
+      { property: "og:url", content: "https://habitsgrid.pro" },
+      { property: "og:image", content: "https://habitsgrid.pro/og.png?v=4" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Habits Grid" },
+      {
+        name: "twitter:description",
+        content:
+          "Track daily habits with a spreadsheet-style grid. Tick cells, watch streaks grow, and build consistency.",
+      },
+      { name: "twitter:image", content: "https://habitsgrid.pro/og.png?v=4" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
