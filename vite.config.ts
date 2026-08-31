@@ -11,7 +11,7 @@ export default defineViteConfig({
     react(),
     tailwindcss(),
     tsconfigPaths(),
-    nitro({ preset: "cloudflare-module" }),
+    nitro({ preset: "vercel" }),
   ],
   tanstackStart: {
     server: { entry: "server" },
