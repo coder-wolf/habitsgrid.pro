@@ -166,15 +166,47 @@ function BillingPage() {
               </div>
             </div>
 
-            {subscription?.expires_at && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {isCancelled ? "Expires" : "Renews"}:{" "}
-                {new Date(subscription.expires_at).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </p>
+            {isPro && (subscription?.created_at || subscription?.renews_at || subscription?.expires_at) && (
+              <div className="mt-4 space-y-2 border-t border-border pt-4">
+                {subscription?.created_at && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Billing cycle started</span>
+                    <span className="text-foreground">
+                      {new Date(subscription.created_at).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                )}
+                {subscription?.renews_at && !isCancelled && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Next renewal</span>
+                    <span className="text-foreground">
+                      {new Date(subscription.renews_at).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                )}
+                {subscription?.expires_at && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">
+                      {isCancelled ? "Access expires" : "Current period ends"}
+                    </span>
+                    <span className="text-foreground">
+                      {new Date(subscription.expires_at).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
