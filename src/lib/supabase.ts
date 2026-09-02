@@ -6,5 +6,11 @@ const publishableKey = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] as strin
 export const isSupabaseConfigured = Boolean(supabaseUrl && publishableKey);
 
 export const supabase: SupabaseClient | null = isSupabaseConfigured
-  ? createClient(supabaseUrl as string, publishableKey as string)
+  ? createClient(supabaseUrl as string, publishableKey as string, {
+      auth: {
+        persistSession: true,
+        detectSessionInUrl: true,
+        autoRefreshToken: true,
+      },
+    })
   : null;
