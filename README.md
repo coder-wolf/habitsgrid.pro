@@ -64,7 +64,7 @@ A modern habit tracking app with a visual grid interface, 10 color themes, drag-
 
 ```sh
 git clone <this-repository-url>
-cd daily-habit-helper
+cd habitsgrid.pro
 bun install
 ```
 
