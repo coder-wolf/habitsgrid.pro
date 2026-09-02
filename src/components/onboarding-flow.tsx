@@ -121,14 +121,12 @@ export function OnboardingFlow({ onDemo }: { onDemo?: () => void }) {
               {googleBusy ? "Working..." : "Sign in with Google"}
             </button>
 
-            {!isSupabaseConfigured && (
-              <button
-                onClick={handleTryDemo}
-                className="font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Try demo
-              </button>
-            )}
+            <button
+              onClick={handleTryDemo}
+              className="font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Skip — try demo
+            </button>
           </div>
         )}
 
