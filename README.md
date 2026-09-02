@@ -1,6 +1,6 @@
 <div align="center">
 
-# Daily Habit Helper
+# HabitsGrid.pro
 
 **Track your habits. Build your streaks. Stay consistent.**
 
