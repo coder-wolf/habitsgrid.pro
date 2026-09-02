@@ -10,7 +10,6 @@ import {
 import { type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react";
-import { DataFast } from "@/components/datafast";
 
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth";
@@ -136,7 +135,6 @@ function RootShell({ children }: { children: ReactNode }) {
         {children}
         <Scripts />
         <Analytics />
-        <DataFast />
       </body>
     </html>
   );
