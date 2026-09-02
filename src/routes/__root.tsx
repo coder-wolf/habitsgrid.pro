@@ -130,6 +130,12 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script
+          defer
+          data-website-id="dfid_TviZnB7jqhu0vWvSHp9IH"
+          data-domain="habitsgrid.pro"
+          src="https://datafa.st/js/script.js"
+        />
       </head>
       <body>
         {children}

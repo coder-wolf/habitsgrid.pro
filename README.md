@@ -61,7 +61,7 @@ HabitsGrid is a spreadsheet-style habit tracker that makes consistency visual. M
 | **Charts** | [Recharts](https://recharts.org) | Consistency visualizations |
 | **Build** | [Vite 8](https://vitejs.dev) · Rolldown | Rust-powered bundler |
 | **Deploy** | [Vercel](https://vercel.com) | Edge functions, automatic deploys |
-| **Analytics** | [Vercel Analytics](https://vercel.com/analytics) | Privacy-first tracking |
+| **Analytics** | [DataFast](https://datafast.app) · [Vercel Analytics](https://vercel.com/analytics) | Privacy-first tracking |
 
 ---
 
