@@ -18,7 +18,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, ChevronRight, ChevronDown, Share2, Download } from "lucide-react";
+import { GripVertical, ChevronRight, ChevronDown, Share2, Download, Clipboard } from "lucide-react";
 import { toast } from "sonner";
 import { toPng } from "html-to-image";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -462,6 +462,9 @@ function Index() {
   const shiftMonth = (delta: number) =>
     setCursor((c) => new Date(c.getFullYear(), c.getMonth() + delta, 1));
 
+  const monthLabel = cursor.toLocaleString("en-US", { month: "long" });
+  const yearLabel = cursor.getFullYear();
+
   const handleShare = async () => {
     if (!gridRef.current || sharing) return;
     setSharing(true);
@@ -510,26 +513,14 @@ function Index() {
       document.body.removeChild(wrapper);
       grid.classList.remove("exporting");
 
-      // Try native share, fallback to download
-      if (navigator.share && navigator.canShare) {
-        const blob = await (await fetch(dataUrl)).blob();
-        const file = new File([blob], `habitsgrid-${monthLabel.toLowerCase()}-${yearLabel}.png`, { type: "image/png" });
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: `HabitsGrid — ${monthLabel} ${yearLabel}`,
-            text: `My habit progress for ${monthLabel} ${yearLabel}`,
-            files: [file],
-          });
-          toast.success("Shared successfully!");
-          return;
-        }
-      }
-
-      // Fallback: download the image
+      // Always download the file
+      const dateStr = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}`;
       const link = document.createElement("a");
-      link.download = `habitsgrid-${monthLabel.toLowerCase()}-${yearLabel}.png`;
       link.href = dataUrl;
+      link.download = `habitsgrid-${dateStr}.png`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
       toast.success("Image downloaded!");
     } catch (err) {
       console.error("Share failed:", err);
@@ -540,15 +531,30 @@ function Index() {
     }
   };
 
+  const handleCopyText = async () => {
+    const todayKey = cellKey(month, today.getDate());
+    const lines: string[] = [`HabitsGrid — ${monthLabel} ${yearLabel}\n`];
+
+    for (const section of state.sections) {
+      if (section.habits.length === 0 || section.collapsed) continue;
+      lines.push(`**${section.name}**`);
+      for (const habit of section.habits) {
+        const done = (state.completions[habit.id] ?? []).includes(todayKey);
+        lines.push(`${done ? "✅" : "❌"} ${habit.name}`);
+      }
+      lines.push("");
+    }
+
+    await navigator.clipboard.writeText(lines.join("\n").trim());
+    toast.success("Copied to clipboard!");
+  };
+
   const allHabits = state.sections.flatMap((s) => s.habits);
   const doneToday = isCurrentMonth
     ? allHabits.filter((h) =>
         (state.completions[h.id] ?? []).includes(cellKey(month, today.getDate())),
       ).length
     : 0;
-
-  const monthLabel = cursor.toLocaleString("en-US", { month: "long" });
-  const yearLabel = cursor.getFullYear();
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
@@ -570,18 +576,31 @@ function Index() {
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                 {monthLabel} {yearLabel}
               </p>
-              <button
-                onClick={handleShare}
-                disabled={sharing || allHabits.length === 0}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
-              >
-                {sharing ? (
-                  <Download className="size-3 animate-pulse" />
-                ) : (
-                  <Share2 className="size-3" />
-                )}
-                {sharing ? "Exporting..." : "Share"}
-              </button>
+              <div className="flex items-center gap-1">
+                <span className="hidden font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground mr-1 sm:inline">
+                  Share on socials →
+                </span>
+                <button
+                  onClick={handleShare}
+                  disabled={sharing || allHabits.length === 0}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                >
+                  {sharing ? (
+                    <Download className="size-3 animate-pulse" />
+                  ) : (
+                    <Share2 className="size-3" />
+                  )}
+                  {sharing ? "Exporting..." : "Capture"}
+                </button>
+                <button
+                  onClick={handleCopyText}
+                  disabled={allHabits.length === 0}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                >
+                  <Clipboard className="size-3" />
+                  Copy
+                </button>
+              </div>
             </div>
             <DndContext
               sensors={sensors}

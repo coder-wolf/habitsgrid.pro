@@ -1,0 +1,10 @@
+habitsgrid.pro — track habits like a spreadsheet, but actually fun
+
+✅ monthly grid view — habits as rows, days as columns, instant visual progress
+🎨 10 themes (light + dark)
+🔄 drag-and-drop reorder habits & groups
+📸 capture your grid as an image for socials
+☁️ cloud sync with Pro
+🔐 sign in with Google, or just try the demo
+
+free to use → habitsgrid.pro
