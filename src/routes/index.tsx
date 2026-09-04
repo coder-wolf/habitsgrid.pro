@@ -763,7 +763,7 @@ function Index() {
 
 function SeoContent() {
   return (
-    <footer className="border-t border-border bg-secondary/30">
+    <footer className="mt-16 border-t border-border bg-secondary/30">
       <div className="mx-auto max-w-[1400px] px-4 py-12 sm:px-8">
         <div className="grid gap-10 md:grid-cols-3">
           <div className="md:col-span-2">
