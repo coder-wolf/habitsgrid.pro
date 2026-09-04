@@ -66,7 +66,7 @@ export function UpgradeDialog({ open, onOpenChange, trigger }: UpgradeDialogProp
           disabled={loading}
           className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading ? "Redirecting to checkout..." : "Upgrade to Pro"}
+          {loading ? "Redirecting to checkout..." : "Upgrade to Pro — $2/mo"}
         </button>
         <p className="text-center text-[11px] text-muted-foreground">
           Cancel anytime. Powered by LemonSqueezy.
