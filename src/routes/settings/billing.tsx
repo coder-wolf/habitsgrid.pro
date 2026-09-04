@@ -225,7 +225,7 @@ function BillingPage() {
               </div>
             </div>
             {!isPro && (
-              <p className="mt-4 text-xs text-muted-foreground">$2 USD / month</p>
+              <p className="mt-4 text-xs text-muted-foreground">$0.99 USD / month</p>
             )}
           </div>
 

@@ -152,7 +152,7 @@ export function OnboardingFlow({ onDemo }: { onDemo?: () => void }) {
                   </p>
                 </div>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">$2 USD / month</p>
+              <p className="mt-3 text-xs text-muted-foreground">$0.99 USD / month</p>
             </div>
 
             <button
