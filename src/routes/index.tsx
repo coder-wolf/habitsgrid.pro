@@ -18,7 +18,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, ChevronRight, ChevronDown, Share2, Download, Clipboard, ListTodo } from "lucide-react";
+import { GripVertical, ChevronRight, ChevronDown, Share2, Download, Clipboard } from "lucide-react";
 import { toast } from "sonner";
 import { toPng } from "html-to-image";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -26,7 +26,6 @@ import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { UpgradeDialog } from "@/components/upgrade-dialog";
-import { TodoSidebar } from "@/components/todo-sidebar";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { OnboardingFlow } from "@/components/onboarding-flow";
 import {
@@ -158,7 +157,6 @@ function Index() {
   const lastSyncErrorRef = useRef<string | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const [sharing, setSharing] = useState(false);
-  const [todoOpen, setTodoOpen] = useState(false);
 
   const authResolved = !authLoading;
 
@@ -706,7 +704,6 @@ function Index() {
             </p>
           </div>
           <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
-          <TodoSidebar open={todoOpen} onToggle={() => setTodoOpen((v) => !v)} />
         </>
       )}
     </div>
