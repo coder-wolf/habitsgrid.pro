@@ -532,3 +532,14 @@
     color: var(--color-foreground);
   }
 }
+
+/* Hide interactive elements during screenshot export */
+.exporting .group-hover\:opacity-0,
+.exporting [class*="group-hover"],
+.exporting button[class*="opacity-0"],
+.exporting .add-habit-row,
+.exporting .add-group-row,
+.exporting [aria-label^="Drag"],
+.exporting [aria-label^="Delete"] {
+  display: none !important;
+}

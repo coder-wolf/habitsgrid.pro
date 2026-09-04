@@ -18,8 +18,9 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, ChevronRight, ChevronDown } from "lucide-react";
+import { GripVertical, ChevronRight, ChevronDown, Share2, Download } from "lucide-react";
 import { toast } from "sonner";
+import { toPng } from "html-to-image";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/lib/auth";
@@ -154,6 +155,8 @@ function Index() {
   const stateRef = useRef<State>({ sections: [], completions: {} });
   const cloudReadyRef = useRef<string | null>(null);
   const lastSyncErrorRef = useRef<string | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [sharing, setSharing] = useState(false);
 
   const authResolved = !authLoading;
 
@@ -459,12 +462,93 @@ function Index() {
   const shiftMonth = (delta: number) =>
     setCursor((c) => new Date(c.getFullYear(), c.getMonth() + delta, 1));
 
+  const handleShare = async () => {
+    if (!gridRef.current || sharing) return;
+    setSharing(true);
+
+    try {
+      // Hide interactive elements during capture
+      const grid = gridRef.current;
+      grid.classList.add("exporting");
+
+      // Create a wrapper with branded header
+      const wrapper = document.createElement("div");
+      wrapper.style.cssText = `
+        background: ${getComputedStyle(document.documentElement).getPropertyValue("--background").trim()};
+        padding: 24px;
+        border-radius: 12px;
+        display: inline-block;
+      `;
+
+      // Add branded header
+      const header = document.createElement("div");
+      header.style.cssText = `
+        font-family: 'Inter', system-ui, sans-serif;
+        margin-bottom: 16px;
+        color: ${getComputedStyle(document.documentElement).getPropertyValue("--foreground").trim()};
+      `;
+      header.innerHTML = `
+        <div style="font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">HabitsGrid</div>
+        <div style="font-size: 13px; opacity: 0.6; margin-top: 2px;">${monthLabel} ${yearLabel}</div>
+      `;
+      wrapper.appendChild(header);
+
+      // Clone the grid and append
+      const gridClone = grid.cloneNode(true) as HTMLElement;
+      gridClone.classList.remove("exporting");
+      gridClone.style.overflow = "visible";
+      wrapper.appendChild(gridClone);
+
+      document.body.appendChild(wrapper);
+
+      const dataUrl = await toPng(wrapper, {
+        pixelRatio: 2,
+        cacheBust: true,
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue("--background").trim(),
+      });
+
+      document.body.removeChild(wrapper);
+      grid.classList.remove("exporting");
+
+      // Try native share, fallback to download
+      if (navigator.share && navigator.canShare) {
+        const blob = await (await fetch(dataUrl)).blob();
+        const file = new File([blob], `habitsgrid-${monthLabel.toLowerCase()}-${yearLabel}.png`, { type: "image/png" });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: `HabitsGrid — ${monthLabel} ${yearLabel}`,
+            text: `My habit progress for ${monthLabel} ${yearLabel}`,
+            files: [file],
+          });
+          toast.success("Shared successfully!");
+          return;
+        }
+      }
+
+      // Fallback: download the image
+      const link = document.createElement("a");
+      link.download = `habitsgrid-${monthLabel.toLowerCase()}-${yearLabel}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast.success("Image downloaded!");
+    } catch (err) {
+      console.error("Share failed:", err);
+      toast.error("Failed to export image.");
+      gridRef.current?.classList.remove("exporting");
+    } finally {
+      setSharing(false);
+    }
+  };
+
   const allHabits = state.sections.flatMap((s) => s.habits);
   const doneToday = isCurrentMonth
     ? allHabits.filter((h) =>
         (state.completions[h.id] ?? []).includes(cellKey(month, today.getDate())),
       ).length
     : 0;
+
+  const monthLabel = cursor.toLocaleString("en-US", { month: "long" });
+  const yearLabel = cursor.getFullYear();
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
@@ -482,12 +566,33 @@ function Index() {
             onToday={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
           />
           <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-8">
+            <div className="mb-4 flex items-center justify-between">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                {monthLabel} {yearLabel}
+              </p>
+              <button
+                onClick={handleShare}
+                disabled={sharing || allHabits.length === 0}
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+              >
+                {sharing ? (
+                  <Download className="size-3 animate-pulse" />
+                ) : (
+                  <Share2 className="size-3" />
+                )}
+                {sharing ? "Exporting..." : "Share"}
+              </button>
+            </div>
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
               onDragEnd={handleDragEnd}
             >
-              <div className="overflow-x-auto rounded-lg border border-grid-line bg-surface shadow-sm">
+              <div
+                ref={gridRef}
+                id="habit-grid"
+                className="overflow-x-auto rounded-lg border border-grid-line bg-surface shadow-sm"
+              >
                 <table className="table-fixed border-collapse text-left">
                   <thead>
                     <tr className="border-b border-grid-line">
@@ -740,7 +845,7 @@ function SectionRows({
       )}
 
       {!section.collapsed && (
-        <tr className="border-b border-grid-line">
+        <tr className="add-habit-row border-b border-grid-line">
           <td className="sticky left-0 z-10 bg-surface pl-4 py-1.5">
             {adding ? (
               <input
@@ -787,7 +892,7 @@ function AddGroupRow({ onAdd }: { onAdd: (name: string) => void }) {
   };
 
   return (
-    <tr className="border-t border-grid-line">
+    <tr className="add-group-row border-t border-grid-line">
       <td className="sticky left-0 z-10 w-[240px] bg-surface pl-4 py-1.5">
         {adding ? (
           <input
