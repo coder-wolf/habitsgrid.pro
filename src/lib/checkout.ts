@@ -32,6 +32,17 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     const request = getRequest();
     const origin = request?.headers.get("origin") ?? "https://habitsgrid.pro";
 
+    // Parse cookies from the request to pass DataFast IDs to LemonSqueezy
+    const cookieHeader = request?.headers.get("cookie") ?? "";
+    const cookies = Object.fromEntries(
+      cookieHeader.split(";").map((c) => {
+        const [key, ...rest] = c.trim().split("=");
+        return [key, rest.join("=")];
+      }),
+    );
+    const datafastVisitorId = cookies["datafast_visitor_id"] ?? "";
+    const datafastSessionId = cookies["datafast_session_id"] ?? "";
+
     const response = await fetch(`https://api.lemonsqueezy.com/v1/checkouts`, {
       method: "POST",
       headers: {
@@ -47,6 +58,8 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
               email: data.email,
               custom: {
                 user_id: data.userId,
+                datafast_visitor_id: datafastVisitorId,
+                datafast_session_id: datafastSessionId,
               },
             },
             product_options: {
