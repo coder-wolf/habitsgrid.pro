@@ -533,11 +533,11 @@ function Index() {
 
   const handleCopyText = async () => {
     const todayKey = cellKey(month, today.getDate());
-    const lines: string[] = [`HabitsGrid — ${monthLabel} ${yearLabel}\n`];
+    const lines: string[] = [`Habitsgrid.pro — ${monthLabel} ${yearLabel}\n`];
 
     for (const section of state.sections) {
       if (section.habits.length === 0 || section.collapsed) continue;
-      lines.push(`**${section.name}**`);
+      lines.push(`**${section.name.toUpperCase()}**`);
       for (const habit of section.habits) {
         const done = (state.completions[habit.id] ?? []).includes(todayKey);
         lines.push(`${done ? "✅" : "❌"} ${habit.name}`);
