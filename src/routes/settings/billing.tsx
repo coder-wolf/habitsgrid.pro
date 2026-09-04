@@ -21,9 +21,11 @@ import {
 export const Route = createFileRoute("/settings/billing")({
   head: () => ({
     meta: [
-      { title: "Billing — Habits Grid" },
-      { name: "description", content: "Manage your Habits Grid subscription and plan." },
+      { title: "Billing — HabitsGrid" },
+      { name: "description", content: "Manage your HabitsGrid subscription and plan." },
+      { name: "robots", content: "noindex, nofollow" },
     ],
+    links: [{ rel: "canonical", href: "https://habitsgrid.pro/settings/billing" }],
   }),
   component: BillingPage,
 });
@@ -35,7 +37,9 @@ function BillingPage() {
   const [loadingCheckout, setLoadingCheckout] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
-  const upgraded = new URLSearchParams(window.location.search).get("upgraded") === "true";
+  const upgraded =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("upgraded") === "true";
 
   // After payment redirect, poll until subscription is active
   useEffect(() => {

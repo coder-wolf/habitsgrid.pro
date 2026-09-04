@@ -77,30 +77,30 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Habits Grid" },
+      { title: "HabitsGrid — Spreadsheet-Style Habit Tracker" },
       {
         name: "description",
         content:
-          "Track daily habits with a spreadsheet-style grid. Tick cells, watch streaks grow, and build consistency.",
+          "HabitsGrid is a free spreadsheet-style habit tracker. Every habit is a row, every day is a column — tick cells, build streaks, export your grid. Free & Pro sync.",
       },
-      { property: "og:title", content: "Habits Grid" },
+      { property: "og:title", content: "HabitsGrid — Spreadsheet-Style Habit Tracker" },
       {
         property: "og:description",
         content:
-          "Track daily habits with a spreadsheet-style grid. Tick cells, watch streaks grow, and build consistency.",
+          "Every habit is a row, every day is a column. Tick cells, build streaks, and export your monthly grid. Free & Pro sync.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "Habits Grid" },
-      { property: "og:url", content: "https://habitsgrid.pro" },
+      { property: "og:site_name", content: "HabitsGrid" },
+      { property: "og:url", content: "https://habitsgrid.pro/" },
       { property: "og:image", content: "https://habitsgrid.pro/og.png?v=4" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Habits Grid" },
+      { name: "twitter:title", content: "HabitsGrid — Spreadsheet-Style Habit Tracker" },
       {
         name: "twitter:description",
         content:
-          "Track daily habits with a spreadsheet-style grid. Tick cells, watch streaks grow, and build consistency.",
+          "Every habit is a row, every day is a column. Tick cells, build streaks, and export your monthly grid.",
       },
       { name: "twitter:image", content: "https://habitsgrid.pro/og.png?v=4" },
     ],
@@ -115,7 +115,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "icon", href: "/favicon-48x48.png", type: "image/png", sizes: "48x48" },
+      { rel: "icon", href: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
     ],
   }),
 
