@@ -612,10 +612,10 @@ function Index() {
                 id="habit-grid"
                 className="overflow-x-auto rounded-lg border border-grid-line bg-surface shadow-sm"
               >
-                <table className="table-fixed border-collapse text-left">
+                <table className="w-max table-fixed border-collapse text-left">
                   <thead>
                     <tr className="border-b border-grid-line">
-                      <th className="sticky left-0 z-20 w-[240px] bg-secondary pl-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                      <th className="sticky left-0 z-20 w-[240px] min-w-[240px] bg-secondary pl-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                         Habit
                       </th>
                       {days.map((d) => {
@@ -623,7 +623,7 @@ function Index() {
                         return (
                           <th
                             key={d}
-                            className={`${isToday ? "w-[60px]" : "w-6"} border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
+                            className={`${isToday ? "w-[60px] min-w-[60px]" : "w-8 min-w-8"} border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
                               isToday
                                 ? "bg-accent text-accent-foreground border-l-accent border-r-accent"
                                 : "text-muted-foreground"
@@ -698,7 +698,7 @@ function Index() {
                   onClick={() => setUpgradeOpen(true)}
                   className="ml-1 text-primary transition-colors hover:underline"
                 >
-                  Upgrade for cloud sync
+                  Upgrade for $0.99/mo
                 </button>
               )}
             </p>
@@ -778,7 +778,7 @@ function SectionRows({
         style={sectionStyle}
         className={`border-y border-grid-line bg-secondary group/section ${sectionDragging ? "relative z-50" : ""}`}
       >
-        <td className="sticky left-0 z-10 w-[240px] bg-secondary pl-4 py-2">
+        <td className="sticky left-0 z-10 w-[240px] min-w-[240px] bg-secondary pl-4 py-2">
           <div className="flex items-center gap-1">
             <button
               {...sectionAttributes}
@@ -865,7 +865,7 @@ function SectionRows({
 
       {!section.collapsed && (
         <tr className="add-habit-row border-b border-grid-line">
-          <td className="sticky left-0 z-10 bg-surface pl-4 py-1.5">
+          <td className="sticky left-0 z-10 w-[240px] min-w-[240px] bg-surface pl-4 py-1.5">
             {adding ? (
               <input
                 autoFocus
@@ -912,7 +912,7 @@ function AddGroupRow({ onAdd }: { onAdd: (name: string) => void }) {
 
   return (
     <tr className="add-group-row border-t border-grid-line">
-      <td className="sticky left-0 z-10 w-[240px] bg-surface pl-4 py-1.5">
+      <td className="sticky left-0 z-10 w-[240px] min-w-[240px] bg-surface pl-4 py-1.5">
         {adding ? (
           <input
             ref={inputRef}
@@ -1000,7 +1000,7 @@ function SortableHabitRow({
       style={style}
       className={`group border-b border-grid-line last:border-b-0 ${isDragging ? "relative z-50" : ""}`}
     >
-      <td className="sticky left-0 z-10 bg-surface pl-4 py-1.5 group-hover:bg-secondary">
+      <td className="sticky left-0 z-10 w-[240px] min-w-[240px] bg-surface pl-4 py-1.5 group-hover:bg-secondary">
         <div className="flex items-center gap-2">
           <button
             {...attributes}

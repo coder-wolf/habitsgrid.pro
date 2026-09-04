@@ -143,16 +143,21 @@ export function OnboardingFlow({ onDemo }: { onDemo?: () => void }) {
             </div>
 
             <div className="rounded-lg border border-border p-4 text-left">
-              <div className="flex items-start gap-3">
-                <Cloud className="mt-0.5 size-5 shrink-0 text-primary" />
-                <div>
-                  <p className="text-sm font-medium">Cloud Sync & Backup</p>
-                  <p className="text-xs text-muted-foreground">
-                    Your habits are backed up and synced across all your devices.
-                  </p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-start gap-3">
+                  <Cloud className="mt-0.5 size-5 shrink-0 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Cloud Sync & Backup</p>
+                    <p className="text-xs text-muted-foreground">
+                      Your habits are backed up and synced across all your devices.
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-2xl font-bold tracking-tight text-foreground">$0.99</span>
+                  <span className="block text-[10px] text-muted-foreground">/ month</span>
                 </div>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">$0.99 USD / month</p>
             </div>
 
             <button
