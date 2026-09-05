@@ -6,7 +6,7 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 import { createCheckoutSession } from "@/lib/checkout";
 import { toast } from "sonner";
 
-export function OnboardingFlow({ onDemo }: { onDemo?: () => void }) {
+export function OnboardingFlow({ onDemo, embedded }: { onDemo?: () => void; embedded?: boolean }) {
   const navigate = useNavigate();
   const { user, loading: authLoading, isPro, signInWithGoogle } = useAuth();
   const [step, setStep] = useState(1);
@@ -29,7 +29,13 @@ export function OnboardingFlow({ onDemo }: { onDemo?: () => void }) {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div
+        className={
+          embedded
+            ? "flex items-center justify-center px-4 py-12"
+            : "flex min-h-screen items-center justify-center bg-background"
+        }
+      >
         <p className="font-mono text-xs text-muted-foreground">Loading...</p>
       </div>
     );
@@ -68,7 +74,13 @@ export function OnboardingFlow({ onDemo }: { onDemo?: () => void }) {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div
+      className={
+        embedded
+          ? "flex items-center justify-center px-4 py-12"
+          : "flex min-h-screen items-center justify-center bg-background px-4"
+      }
+    >
       <div className="w-full max-w-sm space-y-8">
         {/* Step indicator */}
         <div className="flex items-center justify-center gap-2">
