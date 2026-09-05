@@ -544,7 +544,7 @@ function Index() {
         color: ${getComputedStyle(document.documentElement).getPropertyValue("--foreground").trim()};
       `;
       header.innerHTML = `
-        <div style="font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">HabitsGrid</div>
+        <div style="font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">HabitsGrid.pro</div>
         <div style="font-size: 13px; opacity: 0.6; margin-top: 2px;">${monthLabel} ${yearLabel}</div>
       `;
       wrapper.appendChild(header);
