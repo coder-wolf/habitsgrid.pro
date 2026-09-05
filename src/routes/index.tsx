@@ -4,9 +4,10 @@ import { createPortal } from "react-dom";
 import {
   DndContext,
   DragOverlay,
-  closestCenter,
-  PointerSensor,
   KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -221,6 +222,8 @@ function Index() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    // Long-press to drag on touch so scrolling and cell taps still work.
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
@@ -897,7 +900,7 @@ function SectionRows({
             <button
               {...sectionAttributes}
               {...sectionListeners}
-              className="shrink-0 rounded p-0.5 text-muted-foreground/50 hover:text-foreground active:cursor-grabbing"
+              className="shrink-0 touch-none rounded p-2 -m-1 select-none text-muted-foreground/50 hover:text-foreground active:cursor-grabbing sm:p-0.5 sm:m-0"
               aria-label={`Drag group ${section.name}`}
             >
               <GripVertical className="size-3.5" />
@@ -1119,7 +1122,7 @@ function SortableHabitRow({
           <button
             {...attributes}
             {...listeners}
-            className="shrink-0 rounded p-0.5 text-muted-foreground/50 hover:text-foreground active:cursor-grabbing"
+            className="shrink-0 touch-none rounded p-2 -m-1 select-none text-muted-foreground/50 hover:text-foreground active:cursor-grabbing sm:p-0.5 sm:m-0"
             aria-label={`Drag ${habit.name}`}
           >
             <GripVertical className="size-3.5" />
