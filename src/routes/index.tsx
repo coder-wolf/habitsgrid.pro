@@ -748,10 +748,43 @@ function Index() {
                     </span>
                   </div>
                 ) : activeHabit ? (
-                  <div className="flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 text-[13px] shadow-lg cursor-grabbing">
-                    <GripVertical className="size-3.5 text-muted-foreground" />
-                    <span className={`size-2 rounded-sm ${habitColorClass[activeHabit.color]}`} />
-                    <span>{activeHabit.name}</span>
+                  <div className="max-w-[90vw] overflow-hidden rounded-md border border-border bg-surface shadow-xl cursor-grabbing">
+                    <table className="w-max table-fixed border-separate border-spacing-0 text-left">
+                      <tbody>
+                        <tr>
+                          <td className="w-[240px] min-w-[240px] bg-surface pl-4 py-1.5">
+                            <div className="flex items-center gap-2">
+                              <GripVertical className="size-3.5 text-muted-foreground" />
+                              <span
+                                className={`size-2 shrink-0 rounded-sm ${habitColorClass[activeHabit.color]}`}
+                              />
+                              <span className="truncate text-[13px]">{activeHabit.name}</span>
+                            </div>
+                          </td>
+                          {days.map((d) => {
+                            const filled = (state.completions[activeHabit.id] ?? []).includes(
+                              cellKey(month, d),
+                            );
+                            const isToday = isCurrentMonth && d === today.getDate();
+                            return (
+                              <td
+                                key={d}
+                                className={`border-l p-0 ${isToday ? "border-l-accent" : "border-grid-line"}`}
+                              >
+                                <span
+                                  className={`block h-7 ${isToday ? "w-[60px]" : "w-8"} ${filled
+                                      ? habitColorClass[activeHabit.color]
+                                      : isToday
+                                        ? "bg-accent/50"
+                                        : "bg-cell/40"
+                                    }`}
+                                />
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 ) : null}
               </DragOverlay>
