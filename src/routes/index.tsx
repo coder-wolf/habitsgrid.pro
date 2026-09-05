@@ -28,6 +28,7 @@ import { supabase } from "@/lib/supabase";
 import { UpgradeDialog } from "@/components/upgrade-dialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { OnboardingFlow } from "@/components/onboarding-flow";
+import { SeoFooter } from "@/components/seo-footer";
 import {
   cellKey,
   daysInMonth,
