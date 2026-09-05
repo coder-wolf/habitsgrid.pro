@@ -364,12 +364,12 @@ function Index() {
       sections: prev.sections.map((s) =>
         s.id === sectionId
           ? {
-              ...s,
-              habits: [
-                ...s.habits,
-                makeHabit(name, null, ((s.habits.length % 6) + 1) as Habit["color"]),
-              ],
-            }
+            ...s,
+            habits: [
+              ...s.habits,
+              makeHabit(name, null, ((s.habits.length % 6) + 1) as Habit["color"]),
+            ],
+          }
           : s,
       ),
     }));
@@ -598,8 +598,8 @@ function Index() {
   const allHabits = state.sections.flatMap((s) => s.habits);
   const doneToday = isCurrentMonth
     ? allHabits.filter((h) =>
-        (state.completions[h.id] ?? []).includes(cellKey(month, today.getDate())),
-      ).length
+      (state.completions[h.id] ?? []).includes(cellKey(month, today.getDate())),
+    ).length
     : 0;
 
   return (
@@ -625,7 +625,7 @@ function Index() {
             onShiftMonth={shiftMonth}
             onToday={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
           />
-          <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-8">
+          <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-8">
             <div className="mb-4 flex items-center justify-between">
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                 {monthLabel} {yearLabel}
@@ -666,7 +666,7 @@ function Index() {
                 id="habit-grid"
                 className="overflow-x-auto rounded-lg border border-grid-line bg-surface shadow-sm"
               >
-                <table className="table-fixed border-separate border-spacing-0 text-left">
+                <table className="w-max table-fixed border-separate border-spacing-0 text-left">
                   <thead>
                     <tr className="border-b border-grid-line">
                       <th className="sticky left-0 z-20 w-[240px] min-w-[240px] bg-secondary pl-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
@@ -677,11 +677,10 @@ function Index() {
                         return (
                           <th
                             key={d}
-                            className={`${isToday ? "w-[60px] min-w-[60px]" : "w-8 min-w-8"} border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${
-                              isToday
+                            className={`${isToday ? "w-[60px] min-w-[60px]" : "w-8 min-w-8"} border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${isToday
                                 ? "bg-accent text-accent-foreground border-l-accent border-r-accent"
                                 : "text-muted-foreground"
-                            }`}
+                              }`}
                           >
                             <span className="block leading-tight">{d}</span>
                             <span className="block text-[9px] opacity-50">
@@ -746,7 +745,7 @@ function Index() {
                 ? isPro
                   ? "Drag to reorder · Click cells to tick · Synced to your account"
                   : "Drag to reorder · Click cells to tick · "
-                : "Drag to reorder · Click cells to tick · Sign in to sync"}
+                : "Drag to reorder · Click cells to tick · Upgrade to Pro to sync"}
               {user && !isPro && (
                 <button
                   onClick={() => setUpgradeOpen(true)}
@@ -1092,11 +1091,10 @@ function SortableHabitRow({
                         onRecolor(sectionId, habit.id, c);
                         setOpenColor(false);
                       }}
-                      className={`size-4 rounded-sm ${habitColorClass[c]} ${
-                        c === habit.color
+                      className={`size-4 rounded-sm ${habitColorClass[c]} ${c === habit.color
                           ? "ring-2 ring-foreground ring-offset-1 ring-offset-popover"
                           : "hover:scale-125"
-                      } transition-transform`}
+                        } transition-transform`}
                       aria-label={`Color ${c}`}
                     />
                   ))}
@@ -1150,11 +1148,10 @@ function SortableHabitRow({
               onClick={() => onToggle(habit.id, d)}
               aria-label={`${habit.name} day ${d}`}
               aria-pressed={filled}
-              className={`block h-7 ${isToday ? "w-[60px]" : "w-8"} transition-colors ${
-                filled
+              className={`block h-7 ${isToday ? "w-[60px]" : "w-8"} transition-colors ${filled
                   ? `${habitColorClass[habit.color]} hover:opacity-80`
                   : `${isToday ? "bg-accent/50" : "bg-cell/40"} hover:bg-accent`
-              }`}
+                }`}
             />
           </td>
         );
