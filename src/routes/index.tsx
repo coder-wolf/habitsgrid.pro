@@ -821,7 +821,7 @@ function SectionRows({
   } = useSortable({ id: section.id });
 
   const sectionStyle = {
-    transform: CSS.Transform.toString(sectionTransform),
+    transform: sectionDragging ? CSS.Transform.toString(sectionTransform) : undefined,
     transition: sectionTransition,
     opacity: sectionDragging ? 0.4 : undefined,
   };
@@ -1042,7 +1042,7 @@ function SortableHabitRow({
   });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: isDragging ? CSS.Transform.toString(transform) : undefined,
     transition,
     opacity: isDragging ? 0.4 : undefined,
   };
