@@ -666,7 +666,7 @@ function Index() {
                 id="habit-grid"
                 className="overflow-x-auto rounded-lg border border-grid-line bg-surface shadow-sm"
               >
-                <table className="w-max table-fixed border-separate border-spacing-0 text-left">
+                <table className="table-fixed border-separate border-spacing-0 text-left">
                   <thead>
                     <tr className="border-b border-grid-line">
                       <th className="sticky left-0 z-20 w-[240px] min-w-[240px] bg-secondary pl-4 py-2 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
