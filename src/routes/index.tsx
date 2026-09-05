@@ -3,12 +3,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   DndContext,
+  DragOverlay,
   closestCenter,
   PointerSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -197,6 +199,7 @@ function Index() {
   const [adding, setAdding] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const stateRef = useRef<State>({ sections: [], completions: {} });
   const cloudReadyRef = useRef<string | null>(null);
@@ -445,6 +448,7 @@ function Index() {
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveId(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -602,6 +606,11 @@ function Index() {
     ).length
     : 0;
 
+  const activeSection = activeId ? state.sections.find((s) => s.id === activeId) : null;
+  const activeHabit = activeId
+    ? state.sections.flatMap((s) => s.habits).find((h) => h.id === activeId) ?? null
+    : null;
+
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans text-foreground">
       {/* SEO: crawlable H1 — app is client-rendered, so bots need static heading */}
@@ -659,6 +668,8 @@ function Index() {
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
+              onDragStart={(event: DragStartEvent) => setActiveId(event.active.id as string)}
+              onDragCancel={() => setActiveId(null)}
               onDragEnd={handleDragEnd}
             >
               <div
@@ -728,6 +739,22 @@ function Index() {
                   </tbody>
                 </table>
               </div>
+              <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
+                {activeSection ? (
+                  <div className="flex items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-xs font-medium shadow-lg cursor-grabbing">
+                    <GripVertical className="size-3.5 text-muted-foreground" />
+                    <span className="font-mono uppercase tracking-[0.2em] text-muted-foreground">
+                      {activeSection.name}
+                    </span>
+                  </div>
+                ) : activeHabit ? (
+                  <div className="flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 text-[13px] shadow-lg cursor-grabbing">
+                    <GripVertical className="size-3.5 text-muted-foreground" />
+                    <span className={`size-2 rounded-sm ${habitColorClass[activeHabit.color]}`} />
+                    <span>{activeHabit.name}</span>
+                  </div>
+                ) : null}
+              </DragOverlay>
             </DndContext>
 
             {!isPro && (
@@ -820,7 +847,7 @@ function SectionRows({
   } = useSortable({ id: section.id });
 
   const sectionStyle = {
-    transform: sectionDragging ? CSS.Transform.toString(sectionTransform) : undefined,
+    transform: CSS.Transform.toString(sectionTransform),
     transition: sectionTransition,
     opacity: sectionDragging ? 0.4 : undefined,
   };
@@ -1041,7 +1068,7 @@ function SortableHabitRow({
   });
 
   const style = {
-    transform: isDragging ? CSS.Transform.toString(transform) : undefined,
+    transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.4 : undefined,
   };
