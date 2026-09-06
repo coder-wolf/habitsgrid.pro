@@ -587,16 +587,24 @@ function Index() {
   const handleCopyText = async () => {
     const todayKey = cellKey(month, today.getDate());
     const lines: string[] = [`Habitsgrid.pro — ${monthLabel} ${today.getDate()}, ${yearLabel}\n`];
+    let total = 0;
+    let doneCount = 0;
 
     for (const section of state.sections) {
       if (section.habits.length === 0 || section.collapsed) continue;
       lines.push(`**${section.name.toUpperCase()}**`);
       for (const habit of section.habits) {
         const done = (state.completions[habit.id] ?? []).includes(todayKey);
+        total += 1;
+        if (done) doneCount += 1;
         lines.push(`${done ? "✅" : "❌"} ${habit.name}`);
       }
       lines.push("");
     }
+
+    lines.push(`—`);
+    lines.push(`${doneCount}/${total} done today`);
+    lines.push(`Track your habits free at https://habitsgrid.pro`);
 
     await navigator.clipboard.writeText(lines.join("\n").trim());
     toast.success("Copied to clipboard!");
