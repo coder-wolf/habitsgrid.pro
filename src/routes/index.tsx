@@ -586,7 +586,7 @@ function Index() {
 
   const handleCopyText = async () => {
     const todayKey = cellKey(month, today.getDate());
-    const lines: string[] = [`Habitsgrid.pro — ${monthLabel} ${yearLabel}\n`];
+    const lines: string[] = [`Habitsgrid.pro — ${monthLabel} ${today.getDate()}, ${yearLabel}\n`];
 
     for (const section of state.sections) {
       if (section.habits.length === 0 || section.collapsed) continue;
