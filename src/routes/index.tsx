@@ -586,7 +586,7 @@ function Index() {
 
   const handleCopyText = async () => {
     const todayKey = cellKey(month, today.getDate());
-    const lines: string[] = [`Habitsgrid.pro — ${monthLabel} ${today.getDate()}, ${yearLabel}\n`];
+    const lines: string[] = [`✅ Today's Habit Check-in — ${monthLabel} ${today.getDate()}, ${yearLabel}\n`];
     let total = 0;
     let doneCount = 0;
 
