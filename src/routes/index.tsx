@@ -21,10 +21,18 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, ChevronRight, ChevronDown, Share2, Download, Clipboard } from "lucide-react";
+import { GripVertical, ChevronRight, ChevronDown, Share2, Download, Clipboard, Shuffle, Check } from "lucide-react";
 import { toast } from "sonner";
 import { toPng } from "html-to-image";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
@@ -114,6 +122,20 @@ export const Route = createFileRoute("/")({
 
 type State = { sections: Section[]; completions: Completions };
 
+// Copy-to-social status-mark styles: [done, missed, label].
+const COPY_STATUS_STYLES: Array<[string, string, string]> = [
+  ["✅", "❌", "Classic"],
+  ["🟩", "⬜", "Blocks"],
+  ["🟢", "⚪", "Dots"],
+  ["🔥", "😴", "Fire"],
+  ["✔️", "✖️", "Mono"],
+  ["💚", "🤍", "Hearts"],
+  ["⭐", "☆", "Stars"],
+  ["◼️", "◻️", "Ink"],
+  ["🏆", "😴", "Trophy"],
+];
+const COPY_STYLE_KEY = "habitsgrid-copy-style";
+
 function InlineEdit({
   value,
   onCommit,
@@ -201,6 +223,28 @@ function Index() {
   const [draft, setDraft] = useState("");
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  // Copy-to-social mark style: a fixed style index or "shuffle" for random.
+  // Loaded from localStorage after mount (SSR-safe) and persisted on change.
+  const [copyStyle, setCopyStyle] = useState<number | "shuffle">("shuffle");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(COPY_STYLE_KEY);
+      if (raw === null || raw === "shuffle") return;
+      const i = Number(raw);
+      if (Number.isInteger(i) && i >= 0 && i < COPY_STATUS_STYLES.length) setCopyStyle(i);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(COPY_STYLE_KEY, String(copyStyle));
+    } catch {
+      /* ignore */
+    }
+  }, [copyStyle]);
 
   const stateRef = useRef<State>({ sections: [], completions: {} });
   const cloudReadyRef = useRef<string | null>(null);
@@ -591,15 +635,12 @@ function Index() {
     let doneCount = 0;
 
     // Random status-mark style per copy so shares feel fresh.
-    const STATUS_STYLES: Array<[string, string]> = [
-      ["✅", "❌"],
-      ["🟩", "⬜"],
-      ["🟢", "⚪"],
-      ["🔥", "😴"],
-      ["✔️", "✖️"],
-    ];
-    const [doneMark, missMark] =
-      STATUS_STYLES[Math.floor(Math.random() * STATUS_STYLES.length)];
+    // A saved picker choice overrides the shuffle.
+    const styleIndex =
+      copyStyle === "shuffle"
+        ? Math.floor(Math.random() * COPY_STATUS_STYLES.length)
+        : copyStyle;
+    const [doneMark, missMark] = COPY_STATUS_STYLES[styleIndex];
     // Random generic header emoji (habit-tracking vibe, not score-related).
     const HEADER_EMOJIS = ["📊", "📋", "🗓️", "📌"];
     const headerEmoji = HEADER_EMOJIS[Math.floor(Math.random() * HEADER_EMOJIS.length)];
@@ -698,14 +739,59 @@ function Index() {
                   )}
                   {sharing ? "Exporting..." : "Capture"}
                 </button>
-                <button
-                  onClick={handleCopyText}
-                  disabled={allHabits.length === 0}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
-                >
-                  <Clipboard className="size-3" />
-                  Copy
-                </button>
+                <span className="inline-flex">
+                  <button
+                    onClick={handleCopyText}
+                    disabled={allHabits.length === 0}
+                    title={
+                      copyStyle === "shuffle"
+                        ? "Copy (shuffles emoji style)"
+                        : `Copy (${COPY_STATUS_STYLES[copyStyle][2]} style)`
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-md rounded-r-none border border-border bg-surface px-3 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                  >
+                    <Clipboard className="size-3" />
+                    Copy
+                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        aria-label="Choose copy text style"
+                        disabled={allHabits.length === 0}
+                        className="inline-flex items-center rounded-md rounded-l-none -ml-px border border-border bg-surface px-2 py-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                      >
+                        <ChevronDown className="size-3" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-44">
+                      <DropdownMenuLabel className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                        Copy style
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={() => setCopyStyle("shuffle")}
+                        className="flex items-center gap-2 text-[13px]"
+                      >
+                        <Shuffle className="size-3.5 text-muted-foreground" />
+                        <span>🔀 Shuffle</span>
+                        {copyStyle === "shuffle" && <Check className="ml-auto size-3.5" />}
+                      </DropdownMenuItem>
+                      {COPY_STATUS_STYLES.map(([done, miss, label], i) => (
+                        <DropdownMenuItem
+                          key={label}
+                          onSelect={() => setCopyStyle(i)}
+                          className="flex items-center gap-2 text-[13px]"
+                        >
+                          <span>
+                            {done} {miss}
+                          </span>
+                          <span>{label}</span>
+                          {copyStyle === i && <Check className="ml-auto size-3.5" />}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </span>
               </div>
             </div>
             <DndContext
