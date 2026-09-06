@@ -586,25 +586,42 @@ function Index() {
 
   const handleCopyText = async () => {
     const todayKey = cellKey(month, today.getDate());
-    const lines: string[] = [`✅ Today's Habit Check-in — ${monthLabel} ${today.getDate()}, ${yearLabel}\n`];
+    const rows: string[] = [];
     let total = 0;
     let doneCount = 0;
 
     for (const section of state.sections) {
       if (section.habits.length === 0 || section.collapsed) continue;
-      lines.push(`**${section.name.toUpperCase()}**`);
+      rows.push(`**${section.name.toUpperCase()}**`);
       for (const habit of section.habits) {
         const done = (state.completions[habit.id] ?? []).includes(todayKey);
         total += 1;
         if (done) doneCount += 1;
-        lines.push(`${done ? "✅" : "❌"} ${habit.name}`);
+        rows.push(`${done ? "☑️" : "⬜"} ${habit.name}`);
       }
-      lines.push("");
+      rows.push("");
     }
 
-    lines.push(`—`);
-    lines.push(`${doneCount}/${total} done today`);
-    lines.push(`Track your habits free at https://habitsgrid.pro`);
+    const pct = total === 0 ? 0 : doneCount / total;
+    const mood =
+      total > 0 && doneCount === total ? "🔥" : pct >= 0.5 ? "💪" : doneCount > 0 ? "🌱" : "☕";
+    const tagline =
+      total > 0 && doneCount === total
+        ? "Perfect day — absolutely unstoppable!"
+        : pct >= 0.5
+          ? "Solid progress — keep the streak alive!"
+          : doneCount > 0
+            ? "Small steps count — tomorrow we go again!"
+            : "Fresh start — one tick at a time!";
+
+    const lines: string[] = [
+      `${mood} Today's Habit Check-in — ${monthLabel} ${today.getDate()}, ${yearLabel}`,
+      `${tagline}\n`,
+      ...rows,
+      `—`,
+      `${doneCount}/${total} done today`,
+      `Track your habits free at https://habitsgrid.pro`,
+    ];
 
     await navigator.clipboard.writeText(lines.join("\n").trim());
     toast.success("Copied to clipboard!");
