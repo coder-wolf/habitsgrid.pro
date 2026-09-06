@@ -604,19 +604,17 @@ function Index() {
 
     const pct = total === 0 ? 0 : doneCount / total;
     const pctNum = Math.round(pct * 100);
-    const mood =
-      total > 0 && doneCount === total ? "🔥" : pct >= 0.5 ? "💪" : doneCount > 0 ? "🌱" : "☕";
     const tagline =
       total > 0 && doneCount === total
-        ? "🔥 100% — perfect day, absolutely unstoppable! 🔥"
+        ? "🔥 100% done — perfect day, absolutely unstoppable! 🔥"
         : pct >= 0.5
-          ? `💪 ${pctNum}% — solid progress, keep the streak alive! ⚡`
+          ? `💪 ${pctNum}% done — solid progress, keep the streak alive! ⚡`
           : doneCount > 0
-            ? `🌱 ${pctNum}% — small steps count, tomorrow we go again! 🌟`
-            : "☕ 0% — fresh start, one tick at a time! ✨";
+            ? `🌱 ${pctNum}% done — small steps count, tomorrow we go again! 🌟`
+            : "☕ 0% done — fresh start, one tick at a time! ✨";
 
     const lines: string[] = [
-      `${mood} Today's Habit Check-in — ${monthLabel} ${today.getDate()}, ${yearLabel}`,
+      `📊 Today's Habit Check-in — ${monthLabel} ${today.getDate()}, ${yearLabel}`,
       `${tagline}\n`,
       ...rows,
       `—`,
