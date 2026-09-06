@@ -590,6 +590,20 @@ function Index() {
     let total = 0;
     let doneCount = 0;
 
+    // Random status-mark style per copy so shares feel fresh.
+    const STATUS_STYLES: Array<[string, string]> = [
+      ["✅", "❌"],
+      ["🟩", "⬜"],
+      ["🟢", "⚪"],
+      ["🔥", "😴"],
+      ["✔️", "✖️"],
+    ];
+    const [doneMark, missMark] =
+      STATUS_STYLES[Math.floor(Math.random() * STATUS_STYLES.length)];
+    // Random generic header emoji (habit-tracking vibe, not score-related).
+    const HEADER_EMOJIS = ["📊", "📋", "🗓️", "📌"];
+    const headerEmoji = HEADER_EMOJIS[Math.floor(Math.random() * HEADER_EMOJIS.length)];
+
     for (const section of state.sections) {
       if (section.habits.length === 0 || section.collapsed) continue;
       rows.push(`**${section.name.toUpperCase()}**`);
@@ -597,7 +611,7 @@ function Index() {
         const done = (state.completions[habit.id] ?? []).includes(todayKey);
         total += 1;
         if (done) doneCount += 1;
-        rows.push(`${done ? "🟢" : "⚪"} ${habit.name}`);
+        rows.push(`${done ? doneMark : missMark} ${habit.name}`);
       }
       rows.push("");
     }
@@ -616,7 +630,7 @@ function Index() {
               : "☕ 0% done — blank slate, tomorrow we attack! ✨";
 
     const lines: string[] = [
-      `📊 Today's Habit Check-in — ${monthLabel} ${today.getDate()}, ${yearLabel}`,
+      `${headerEmoji} Today's Habit Check-in — ${monthLabel} ${today.getDate()}, ${yearLabel}`,
       `${tagline}\n`,
       ...rows,
       `—`,
