@@ -597,7 +597,7 @@ function Index() {
         const done = (state.completions[habit.id] ?? []).includes(todayKey);
         total += 1;
         if (done) doneCount += 1;
-        rows.push(`${done ? "☑️" : "⬜"} ${habit.name}`);
+        rows.push(`${done ? "✅" : "⬜"} ${habit.name}`);
       }
       rows.push("");
     }
