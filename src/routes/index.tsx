@@ -606,12 +606,14 @@ function Index() {
     const pctNum = Math.round(pct * 100);
     const tagline =
       total > 0 && doneCount === total
-        ? "🔥 100% done — perfect day, absolutely unstoppable! 🔥"
-        : pct >= 0.5
-          ? `💪 ${pctNum}% done — solid progress, keep the streak alive! ⚡`
-          : doneCount > 0
-            ? `🌱 ${pctNum}% done — small steps count, tomorrow we go again! 🌟`
-            : "☕ 0% done — fresh start, one tick at a time! ✨";
+        ? "🔥 100% done — flawless! Absolutely unstoppable! 🔥"
+        : pct >= 0.8
+          ? `⚡ ${pctNum}% done — so close to perfect, finish strong! 💪`
+          : pct >= 0.5
+            ? `💪 ${pctNum}% done — past halfway, keep the streak alive! 🔥`
+            : doneCount > 0
+              ? `🌱 ${pctNum}% done — every tick counts, momentum is building! 🌟`
+              : "☕ 0% done — blank slate, tomorrow we attack! ✨";
 
     const lines: string[] = [
       `📊 Today's Habit Check-in — ${monthLabel} ${today.getDate()}, ${yearLabel}`,
