@@ -755,7 +755,7 @@ function Index() {
                     className="inline-flex items-center gap-1 rounded-md rounded-r-none border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
                     <Clipboard className="size-3" />
-                    Today
+                    Copy today
                   </button>
                   <button
                     onClick={() => void handleCopyText(1)}
@@ -763,7 +763,7 @@ function Index() {
                     title="Copy yesterday's check-in"
                     className="inline-flex items-center rounded-md rounded-none -ml-px border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
-                    Yesterday
+                    Copy yesterday
                   </button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
