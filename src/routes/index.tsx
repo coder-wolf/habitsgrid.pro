@@ -129,10 +129,6 @@ const COPY_STATUS_STYLES: Array<[string, string, string]> = [
   ["🟢", "⚪", "Dots"],
   ["🔥", "😴", "Fire"],
   ["✔️", "✖️", "Mono"],
-  ["💚", "🤍", "Hearts"],
-  ["⭐", "☆", "Stars"],
-  ["◼️", "◻️", "Ink"],
-  ["🏆", "😴", "Trophy"],
 ];
 const COPY_STYLE_KEY = "habitsgrid-copy-style";
 
@@ -628,8 +624,16 @@ function Index() {
     }
   };
 
-  const handleCopyText = async () => {
-    const todayKey = cellKey(month, today.getDate());
+  const handleCopyText = async (dayOffset: 0 | 1 = 0) => {
+    // Copy target: today or yesterday (handles month boundaries).
+    const target = new Date(today);
+    target.setDate(target.getDate() - dayOffset);
+    const targetMonth = monthKey(target);
+    const targetDay = target.getDate();
+    const targetKey = cellKey(targetMonth, targetDay);
+    const targetMonthLabel = target.toLocaleString("en-US", { month: "long" });
+    const targetYear = target.getFullYear();
+    const dayWord = dayOffset === 0 ? "Today's" : "Yesterday's";
     const rows: string[] = [];
     let total = 0;
     let doneCount = 0;
@@ -649,7 +653,7 @@ function Index() {
       if (section.habits.length === 0 || section.collapsed) continue;
       rows.push(`**${section.name.toUpperCase()}**`);
       for (const habit of section.habits) {
-        const done = (state.completions[habit.id] ?? []).includes(todayKey);
+        const done = (state.completions[habit.id] ?? []).includes(targetKey);
         total += 1;
         if (done) doneCount += 1;
         rows.push(`${done ? doneMark : missMark} ${habit.name}`);
@@ -671,16 +675,16 @@ function Index() {
               : "☕ 0% done — blank slate, tomorrow we attack! ✨";
 
     const lines: string[] = [
-      `${headerEmoji} Today's Habit Check-in — ${monthLabel} ${today.getDate()}, ${yearLabel}`,
+      `${headerEmoji} ${dayWord} Habit Check-in — ${targetMonthLabel} ${targetDay}, ${targetYear}`,
       `${tagline}\n`,
       ...rows,
       `—`,
-      `${doneCount}/${total} done today`,
+      `${doneCount}/${total} done ${dayOffset === 0 ? "today" : "yesterday"}`,
       `Track your habits free at https://habitsgrid.pro`,
     ];
 
     await navigator.clipboard.writeText(lines.join("\n").trim());
-    toast.success("Copied to clipboard!");
+    toast.success(dayOffset === 0 ? "Today copied to clipboard!" : "Yesterday copied to clipboard!");
   };
 
   const allHabits = state.sections.flatMap((s) => s.habits);
@@ -741,17 +745,25 @@ function Index() {
                 </button>
                 <span className="inline-flex">
                   <button
-                    onClick={handleCopyText}
+                    onClick={() => void handleCopyText(0)}
                     disabled={allHabits.length === 0}
                     title={
                       copyStyle === "shuffle"
-                        ? "Copy (shuffles emoji style)"
-                        : `Copy (${COPY_STATUS_STYLES[copyStyle][2]} style)`
+                        ? "Copy today's check-in (shuffles emoji style)"
+                        : `Copy today's check-in (${COPY_STATUS_STYLES[copyStyle][2]} style)`
                     }
-                    className="inline-flex items-center gap-1.5 rounded-md rounded-r-none border border-border bg-surface px-3 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                    className="inline-flex items-center gap-1 rounded-md rounded-r-none border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
                     <Clipboard className="size-3" />
-                    Copy
+                    Today
+                  </button>
+                  <button
+                    onClick={() => void handleCopyText(1)}
+                    disabled={allHabits.length === 0}
+                    title="Copy yesterday's check-in"
+                    className="inline-flex items-center rounded-md rounded-none -ml-px border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                  >
+                    Yesterday
                   </button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -818,8 +830,8 @@ function Index() {
                           <th
                             key={d}
                             className={`${isToday ? "w-[60px] min-w-[60px]" : "w-8 min-w-8"} border-l border-grid-line px-0 py-2 text-center font-mono text-[10px] font-medium ${isToday
-                                ? "bg-accent text-accent-foreground border-l-accent border-r-accent"
-                                : "text-muted-foreground"
+                              ? "bg-accent text-accent-foreground border-l-accent border-r-accent"
+                              : "text-muted-foreground"
                               }`}
                           >
                             <span className="block leading-tight">{d}</span>
@@ -902,10 +914,10 @@ function Index() {
                               >
                                 <span
                                   className={`block h-7 ${isToday ? "w-[60px]" : "w-8"} ${filled
-                                      ? habitColorClass[activeHabit.color]
-                                      : isToday
-                                        ? "bg-accent/50"
-                                        : "bg-cell/40"
+                                    ? habitColorClass[activeHabit.color]
+                                    : isToday
+                                      ? "bg-accent/50"
+                                      : "bg-cell/40"
                                     }`}
                                 />
                               </td>
@@ -1281,8 +1293,8 @@ function SortableHabitRow({
                         setOpenColor(false);
                       }}
                       className={`size-4 rounded-sm ${habitColorClass[c]} ${c === habit.color
-                          ? "ring-2 ring-foreground ring-offset-1 ring-offset-popover"
-                          : "hover:scale-125"
+                        ? "ring-2 ring-foreground ring-offset-1 ring-offset-popover"
+                        : "hover:scale-125"
                         } transition-transform`}
                       aria-label={`Color ${c}`}
                     />
@@ -1338,8 +1350,8 @@ function SortableHabitRow({
               aria-label={`${habit.name} day ${d}`}
               aria-pressed={filled}
               className={`block h-7 ${isToday ? "w-[60px]" : "w-8"} transition-colors ${filled
-                  ? `${habitColorClass[habit.color]} hover:opacity-80`
-                  : `${isToday ? "bg-accent/50" : "bg-cell/40"} hover:bg-accent`
+                ? `${habitColorClass[habit.color]} hover:opacity-80`
+                : `${isToday ? "bg-accent/50" : "bg-cell/40"} hover:bg-accent`
                 }`}
             />
           </td>
