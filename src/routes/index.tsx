@@ -129,6 +129,10 @@ const COPY_STATUS_STYLES: Array<[string, string, string]> = [
   ["🟢", "⚪", "Dots"],
   ["🔥", "😴", "Fire"],
   ["✔️", "✖️", "Mono"],
+  ["💚", "🤍", "Hearts"],
+  ["⭐", "☆", "Stars"],
+  ["◼️", "◻️", "Ink"],
+  ["🏆", "😴", "Trophy"],
 ];
 const COPY_STYLE_KEY = "habitsgrid-copy-style";
 
