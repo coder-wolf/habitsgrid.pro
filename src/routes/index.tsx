@@ -743,7 +743,7 @@ function Index() {
                   )}
                   {sharing ? "Exporting..." : "Capture"}
                 </button>
-                <span className="inline-flex">
+                <span className="inline-flex flex-col sm:flex-row">
                   <button
                     onClick={() => void handleCopyText(0)}
                     disabled={allHabits.length === 0}
@@ -752,7 +752,7 @@ function Index() {
                         ? "Copy today's check-in (shuffles emoji style)"
                         : `Copy today's check-in (${COPY_STATUS_STYLES[copyStyle][2]} style)`
                     }
-                    className="inline-flex items-center gap-1 rounded-md rounded-r-none border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                    className="inline-flex items-center gap-1 rounded-t-md rounded-b-none border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50 sm:rounded-l-md sm:rounded-r-none"
                   >
                     <Clipboard className="size-3" />
                     Today
@@ -761,7 +761,7 @@ function Index() {
                     onClick={() => void handleCopyText(1)}
                     disabled={allHabits.length === 0}
                     title="Copy yesterday's check-in"
-                    className="inline-flex items-center rounded-md rounded-none -ml-px border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                    className="inline-flex items-center rounded-none -mt-px border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50 sm:-mt-0 sm:-ml-px"
                   >
                     Yesterday
                   </button>
@@ -770,7 +770,7 @@ function Index() {
                       <button
                         aria-label="Choose copy text style"
                         disabled={allHabits.length === 0}
-                        className="inline-flex items-center rounded-md rounded-l-none -ml-px border border-border bg-surface px-2 py-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                        className="inline-flex items-center justify-center rounded-b-md rounded-t-none -mt-px border border-border bg-surface px-2 py-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50 sm:rounded-r-md sm:rounded-l-none sm:-mt-0 sm:-ml-px"
                       >
                         <ChevronDown className="size-3" />
                       </button>
