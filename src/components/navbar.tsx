@@ -33,20 +33,15 @@ export function Navbar({
   const yearLabel = cursor.getFullYear();
 
   return (
-    <nav className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-md max-md:landscape:fixed max-md:landscape:left-0 max-md:landscape:top-0 max-md:landscape:h-full max-md:landscape:w-14 max-md:landscape:border-b-0 max-md:landscape:border-r">
-      <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4 sm:px-8 max-md:landscape:mx-0 max-md:landscape:h-full max-md:landscape:w-full max-md:landscape:max-w-none max-md:landscape:flex-col max-md:landscape:gap-3 max-md:landscape:px-0 max-md:landscape:py-3">
+    <nav className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-md">
+      <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4 sm:px-8">
         {/* Left: Logo + Title */}
-        <Link to="/" className="flex items-center gap-2.5 max-md:landscape:justify-center">
-          <span className="text-lg font-bold tracking-tight text-foreground max-md:landscape:hidden">
-            Habits Grid
-          </span>
-          <span className="hidden text-base font-bold tracking-tight text-foreground max-md:landscape:block">
-            HG
-          </span>
+        <Link to="/" className="flex items-center gap-2.5">
+          <span className="text-lg font-bold tracking-tight text-foreground">Habits Grid</span>
         </Link>
 
         {/* Center: Month Navigation */}
-        <div className="hidden items-center gap-2 sm:flex max-md:landscape:flex-col max-md:landscape:gap-1">
+        <div className="hidden items-center gap-2 sm:flex">
           <button
             onClick={() => onShiftMonth(-1)}
             aria-label="Previous month"
@@ -56,7 +51,7 @@ export function Navbar({
           </button>
           <button
             onClick={onToday}
-            className="rounded-md px-3 py-1 font-mono text-xs tracking-wide text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground max-md:landscape:px-1 max-md:landscape:py-2 max-md:landscape:[writing-mode:vertical-rl]"
+            className="rounded-md px-3 py-1 font-mono text-xs tracking-wide text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             {monthLabel} {yearLabel}
           </button>
@@ -75,9 +70,9 @@ export function Navbar({
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2 max-md:landscape:flex-col">
+        <div className="flex items-center gap-2">
           {/* Mobile month nav */}
-          <div className="flex items-center gap-1 sm:hidden max-md:landscape:flex-col">
+          <div className="flex items-center gap-1 sm:hidden">
             <button
               onClick={() => onShiftMonth(-1)}
               aria-label="Previous month"
@@ -87,7 +82,7 @@ export function Navbar({
             </button>
             <button
               onClick={onToday}
-              className="rounded-md px-2 py-1 font-mono text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground max-md:landscape:px-1 max-md:landscape:py-2 max-md:landscape:[writing-mode:vertical-rl]"
+              className="rounded-md px-2 py-1 font-mono text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               {monthLabel.slice(0, 3)} {yearLabel}
             </button>
@@ -105,7 +100,7 @@ export function Navbar({
           {user && !isPro && (
             <button
               onClick={() => navigate({ to: "/onboarding" })}
-              className="rounded-md border border-border bg-surface px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground max-md:landscape:px-1.5 max-md:landscape:py-2 max-md:landscape:[writing-mode:vertical-rl]"
+              className="rounded-md border border-border bg-surface px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               Upgrade
             </button>
@@ -115,7 +110,7 @@ export function Navbar({
             <div className="relative">
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="flex items-center gap-2 rounded-md border border-border bg-surface px-2.5 py-1.5 transition-colors hover:bg-secondary max-md:landscape:px-2"
+                className="flex items-center gap-2 rounded-md border border-border bg-surface px-2.5 py-1.5 transition-colors hover:bg-secondary"
               >
                 <div className="flex size-5 items-center justify-center rounded-full bg-primary/10">
                   <span className="text-[10px] font-medium text-primary">
@@ -129,11 +124,11 @@ export function Navbar({
                   {user.email}
                 </span>
                 {isPro ? (
-                  <span className="rounded bg-primary px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-primary-foreground max-md:landscape:hidden">
+                  <span className="rounded bg-primary px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-primary-foreground">
                     Pro
                   </span>
                 ) : (
-                  <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-primary max-md:landscape:hidden">
+                  <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-primary">
                     Free
                   </span>
                 )}
@@ -142,7 +137,7 @@ export function Navbar({
               {menuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-border bg-surface py-1 shadow-md max-md:landscape:left-full max-md:landscape:right-auto max-md:landscape:top-0 max-md:landscape:ml-2 max-md:landscape:mt-0">
+                  <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-border bg-surface py-1 shadow-md">
                     <div className="border-b border-border px-3 py-2">
                       <p className="truncate text-xs text-foreground">{user.email}</p>
                       <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
@@ -196,7 +191,7 @@ export function Navbar({
                   fill="#EA4335"
                 />
               </svg>
-              <span className="max-md:landscape:hidden">Sign in</span>
+              Sign in
             </button>
           )}
         </div>

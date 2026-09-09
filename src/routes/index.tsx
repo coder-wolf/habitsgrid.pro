@@ -719,7 +719,7 @@ function Index() {
     : null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background font-sans text-foreground max-md:landscape:pl-14">
+    <div className="flex min-h-screen flex-col bg-background font-sans text-foreground">
       {/* SEO: crawlable H1 — app is client-rendered, so bots need static heading */}
       <h1 className="sr-only">
         HabitsGrid — Spreadsheet-Style Daily Habit Tracker
