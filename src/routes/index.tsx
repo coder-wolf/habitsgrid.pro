@@ -1043,10 +1043,10 @@ function Index() {
                                     onClick={() => toggleToday(habit.id)}
                                     aria-pressed={done}
                                     aria-label={`${habit.name} ${done ? "done" : "not done"} today`}
-                                    className="flex min-h-[56px] w-full items-center gap-3 px-3 py-3 text-left transition-colors active:bg-secondary"
+                                    className="flex min-h-[44px] w-full items-center gap-2.5 px-3 py-2 text-left transition-colors active:bg-secondary"
                                   >
                                     <span
-                                      className={`flex size-7 shrink-0 items-center justify-center rounded-md border transition-colors ${done
+                                      className={`flex size-6 shrink-0 items-center justify-center rounded-md border transition-colors ${done
                                         ? `${habitColorClass[habit.color]} border-transparent text-white`
                                         : "border-border bg-background text-transparent"
                                         }`}
