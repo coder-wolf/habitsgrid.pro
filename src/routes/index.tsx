@@ -391,6 +391,11 @@ function Index() {
   const days = useMemo(() => Array.from({ length: dayCount }, (_, i) => i + 1), [dayCount]);
   const isCurrentMonth = month === monthKey(today);
 
+  // Mobile checklist always targets today, regardless of the month cursor.
+  const todayMonth = monthKey(today);
+  const todayDay = today.getDate();
+  const todayKey = cellKey(todayMonth, todayDay);
+
   const toggle = useCallback(
     (habitId: string, day: number) => {
       const key = cellKey(month, day);
@@ -401,6 +406,19 @@ function Index() {
       });
     },
     [month],
+  );
+
+  const toggleToday = useCallback(
+    (habitId: string) => {
+      setState((prev) => {
+        const list = prev.completions[habitId] ?? [];
+        const next = list.includes(todayKey)
+          ? list.filter((k) => k !== todayKey)
+          : [...list, todayKey];
+        return { ...prev, completions: { ...prev.completions, [habitId]: next } };
+      });
+    },
+    [todayKey],
   );
 
   const addHabit = (sectionId: string) => {
@@ -725,8 +743,15 @@ function Index() {
           />
           <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-8">
             <div className="mb-4 flex items-center justify-between">
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              <p className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground md:block">
                 {monthLabel} {yearLabel}
+              </p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground md:hidden">
+                {today.toLocaleDateString("en-US", {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                })}
               </p>
               <div className="flex items-center gap-1">
                 <span className="hidden font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground mr-1 sm:inline">
@@ -735,7 +760,7 @@ function Index() {
                 <button
                   onClick={handleShare}
                   disabled={sharing || allHabits.length === 0}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                  className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
                 >
                   {sharing ? (
                     <Download className="size-3 animate-pulse" />
@@ -807,6 +832,8 @@ function Index() {
                 </span>
               </div>
             </div>
+            {/* Desktop: full month grid (md and up) */}
+            <div className="hidden md:block">
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -931,6 +958,159 @@ function Index() {
                 ) : null}
               </DragOverlay>
             </DndContext>
+            </div>
+
+            {/* Mobile: today's checklist only (no month grid) */}
+            <div className="md:hidden">
+              <div className="mb-4 rounded-lg border border-border bg-surface p-4 shadow-sm">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Today ·{" "}
+                  {today.toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </p>
+                {(() => {
+                  const total = allHabits.length;
+                  const done = allHabits.filter((h) =>
+                    (state.completions[h.id] ?? []).includes(todayKey),
+                  ).length;
+                  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+                  return (
+                    <>
+                      <div className="mt-1 flex items-baseline justify-between">
+                        <p className="text-xl font-bold tracking-tight">
+                          {done}/{total} done
+                        </p>
+                        <p className="font-mono text-[11px] text-muted-foreground">{pct}%</p>
+                      </div>
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+
+              {allHabits.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-border bg-surface p-6 text-center">
+                  <p className="text-sm font-medium">No habits yet</p>
+                  <p className="mt-1 text-[13px] text-muted-foreground">
+                    Add a group below, then add your first habit to start today's checklist.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {state.sections.map((section) => {
+                    const sectionDone = section.habits.filter((h) =>
+                      (state.completions[h.id] ?? []).includes(todayKey),
+                    ).length;
+                    return (
+                      <section
+                        key={section.id}
+                        className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm"
+                      >
+                        <header className="flex items-center gap-1 border-b border-grid-line bg-secondary px-3 py-2">
+                          <button
+                            onClick={() => toggleSection(section.id)}
+                            className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+                            aria-label={section.collapsed ? `Expand ${section.name}` : `Collapse ${section.name}`}
+                          >
+                            {section.collapsed ? (
+                              <ChevronRight className="size-4" />
+                            ) : (
+                              <ChevronDown className="size-4" />
+                            )}
+                          </button>
+                          <h2 className="flex-1 truncate font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                            {section.name}
+                          </h2>
+                          <span className="font-mono text-[11px] text-muted-foreground">
+                            {sectionDone}/{section.habits.length}
+                          </span>
+                        </header>
+                        {!section.collapsed && (
+                          <ul className="divide-y divide-grid-line">
+                            {section.habits.map((habit) => {
+                              const done = (state.completions[habit.id] ?? []).includes(todayKey);
+                              return (
+                                <li key={habit.id}>
+                                  <button
+                                    onClick={() => toggleToday(habit.id)}
+                                    aria-pressed={done}
+                                    aria-label={`${habit.name} ${done ? "done" : "not done"} today`}
+                                    className="flex min-h-[56px] w-full items-center gap-3 px-3 py-3 text-left transition-colors active:bg-secondary"
+                                  >
+                                    <span
+                                      className={`flex size-7 shrink-0 items-center justify-center rounded-md border transition-colors ${done
+                                        ? `${habitColorClass[habit.color]} border-transparent text-white`
+                                        : "border-border bg-background text-transparent"
+                                        }`}
+                                    >
+                                      <Check className="size-4" strokeWidth={3} />
+                                    </span>
+                                    <span
+                                      className={`size-2.5 shrink-0 rounded-sm ${habitColorClass[habit.color]}`}
+                                    />
+                                    <span
+                                      className={`flex-1 text-[15px] ${done ? "text-muted-foreground line-through" : ""}`}
+                                    >
+                                      {habit.name}
+                                    </span>
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
+                        {!section.collapsed && (
+                          <div className="border-t border-grid-line px-3 py-2">
+                            {adding === section.id ? (
+                              <input
+                                autoFocus
+                                value={draft}
+                                onChange={(e) => setDraft(e.target.value)}
+                                onBlur={() => addHabit(section.id)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") addHabit(section.id);
+                                  if (e.key === "Escape") {
+                                    setAdding(null);
+                                    setDraft("");
+                                  }
+                                }}
+                                placeholder="Habit name…"
+                                className="w-full bg-transparent text-[15px] outline-none placeholder:text-muted-foreground"
+                              />
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setAdding(section.id);
+                                  setDraft("");
+                                }}
+                                className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+                              >
+                                + Add habit
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </section>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="mt-4">
+                <MobileAddGroupRow onAdd={addSection} />
+              </div>
+              <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                Tap to tick · Today only
+              </p>
+            </div>
 
             {!isPro && (
               <Alert className="mt-4 border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400">
@@ -942,7 +1122,7 @@ function Index() {
               </Alert>
             )}
 
-            <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            <p className="mt-4 hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground md:block">
               {user
                 ? isPro
                   ? "Drag to reorder · Click cells to tick · Synced to your account"
@@ -1196,6 +1376,51 @@ function AddGroupRow({ onAdd }: { onAdd: (name: string) => void }) {
       </td>
       <td colSpan={100} className="bg-cell/30" />
     </tr>
+  );
+}
+
+function MobileAddGroupRow({ onAdd }: { onAdd: (name: string) => void }) {
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (adding) inputRef.current?.focus();
+  }, [adding]);
+
+  const commit = () => {
+    onAdd(draft);
+    setDraft("");
+    setAdding(false);
+  };
+
+  if (!adding) {
+    return (
+      <button
+        onClick={() => setAdding(true)}
+        className="w-full rounded-lg border border-dashed border-border bg-surface px-3 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:border-muted-foreground/40 hover:text-foreground"
+      >
+        + Add group
+      </button>
+    );
+  }
+
+  return (
+    <input
+      ref={inputRef}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") commit();
+        if (e.key === "Escape") {
+          setDraft("");
+          setAdding(false);
+        }
+      }}
+      placeholder="Group name…"
+      className="w-full rounded-lg border border-border bg-surface px-3 py-3 font-mono text-[11px] uppercase tracking-[0.2em] outline-none placeholder:text-muted-foreground"
+    />
   );
 }
 
