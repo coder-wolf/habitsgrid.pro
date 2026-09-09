@@ -743,10 +743,10 @@ function Index() {
           />
           <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-8">
             <div className="mb-4 flex items-center justify-between">
-              <p className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground md:block">
+              <p className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground landscape:block md:block">
                 {monthLabel} {yearLabel}
               </p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground md:hidden">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground landscape:hidden md:hidden">
                 {today.toLocaleDateString("en-US", {
                   weekday: "long",
                   month: "long",
@@ -832,8 +832,8 @@ function Index() {
                 </span>
               </div>
             </div>
-            {/* Desktop: full month grid (md and up) */}
-            <div className="hidden md:block">
+            {/* Full month grid: tablets/desktops, plus phones in landscape */}
+            <div className="hidden landscape:block md:block">
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -960,8 +960,8 @@ function Index() {
             </DndContext>
             </div>
 
-            {/* Mobile: today's checklist only (no month grid) */}
-            <div className="md:hidden">
+            {/* Phone portrait only: today's checklist (no month grid) */}
+            <div className="landscape:hidden md:hidden">
               <div className="mb-4 rounded-lg border border-border bg-surface p-4 shadow-sm">
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                   Today ·{" "}
@@ -1122,7 +1122,7 @@ function Index() {
               </Alert>
             )}
 
-            <p className="mt-4 hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground md:block">
+            <p className="mt-4 hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground landscape:block md:block">
               {user
                 ? isPro
                   ? "Drag to reorder · Click cells to tick · Synced to your account"
