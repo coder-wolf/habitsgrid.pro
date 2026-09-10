@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { useAuth } from "@/lib/auth";
 import { UpgradeDialog } from "@/components/upgrade-dialog";
 import { createCheckoutSession } from "@/lib/checkout";
@@ -134,7 +135,7 @@ function BillingPage() {
   const isCancelled = statusLabel === "cancelled";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background max-md:portrait:pb-32">
       <div className="mx-auto max-w-2xl px-4 py-12 sm:px-8">
         <Link
           to="/"
@@ -290,6 +291,7 @@ function BillingPage() {
       </div>
 
       <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
+      <MobileTabBar />
     </div>
   );
 }
