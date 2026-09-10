@@ -976,7 +976,7 @@ function Index() {
             {/* Phone portrait only: today's checklist (no month grid) */}
             <div className="landscape:hidden md:hidden">
               {allHabits.length > 0 && (
-                <div className="sticky top-14 z-10 -mx-4 mb-4 border-b border-border/60 bg-background/95 px-4 pb-3 pt-2 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.3)] backdrop-blur-md">
+                <div className="sticky top-14 z-10 -mx-4 mb-4 border-b border-foreground/10 bg-background/90 bg-gradient-to-b from-foreground/[0.06] to-transparent px-4 pb-3 pt-2 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.3)] backdrop-blur-md">
                   <div className="mb-2 flex items-center justify-between px-1">
                     <p className="text-[17px] font-bold tracking-tight">
                       {selectedDay.toLocaleDateString("en-US", { month: "long" })}{" "}
@@ -985,7 +985,7 @@ function Index() {
                       </span>
                     </p>
                     <p
-                      className={`rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.15em] ${dayOffset === 0 ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+                      className={`rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.15em] ${dayOffset === 0 ? "bg-foreground text-background" : "bg-secondary text-muted-foreground"}`}
                     >
                       {dayOffset === 0
                         ? "Today"
@@ -1015,14 +1015,14 @@ function Index() {
                           aria-pressed={isSelected}
                           aria-label={`${d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}: ${done} of ${total} done`}
                           className={`flex flex-col items-center gap-1 rounded-2xl border py-2 transition-all active:scale-95 ${isTodayDot
-                            ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                            ? "border-foreground bg-foreground text-background shadow-lg shadow-black/20"
                             : isSelected
-                              ? "border-primary/60 bg-primary/10 text-foreground"
-                              : "border-border/60 bg-surface text-foreground"
+                              ? "border-foreground/30 bg-foreground/[0.06] text-foreground"
+                              : "border-foreground/10 bg-surface text-foreground"
                             }`}
                         >
                           <span
-                            className={`font-mono text-[9px] font-medium uppercase tracking-wider ${isTodayDot ? "text-primary-foreground/80" : "text-muted-foreground"}`}
+                            className={`font-mono text-[9px] font-medium uppercase tracking-wider ${isTodayDot ? "text-background/60" : "text-muted-foreground"}`}
                           >
                             {d.toLocaleDateString("en-US", { weekday: "narrow" })}
                           </span>
@@ -1030,10 +1030,10 @@ function Index() {
                             {d.getDate()}
                           </span>
                           <span
-                            className={`h-1 w-7 overflow-hidden rounded-full ${isTodayDot ? "bg-primary-foreground/30" : "bg-secondary"}`}
+                            className={`h-1 w-7 overflow-hidden rounded-full ${isTodayDot ? "bg-background/25" : "bg-foreground/10"}`}
                           >
                             <span
-                              className={`block h-full rounded-full ${isTodayDot ? "bg-primary-foreground" : "bg-primary"}`}
+                              className={`block h-full rounded-full ${isTodayDot ? "bg-background" : "bg-foreground/70"}`}
                               style={{ width: `${pct}%` }}
                             />
                           </span>
