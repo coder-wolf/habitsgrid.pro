@@ -29,6 +29,10 @@ function getInitialTheme(): Theme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "midnight" : "light";
 }
 
+type DocumentWithViewTransition = Document & {
+  startViewTransition?: (callback: () => void) => void;
+};
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
@@ -41,7 +45,24 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);
 
-  const value = useMemo<ThemeContextValue>(() => ({ theme, setTheme: setThemeState }), [theme]);
+  // Apple-style fluid crossfade between themes (falls back to instant swap).
+  const setTheme = useMemo<ThemeContextValue["setTheme"]>(
+    () => (next: Theme) => {
+      if (typeof window === "undefined") {
+        setThemeState(next);
+        return;
+      }
+      const doc = document as DocumentWithViewTransition;
+      if (doc.startViewTransition) {
+        doc.startViewTransition(() => setThemeState(next));
+      } else {
+        setThemeState(next);
+      }
+    },
+    [],
+  );
+
+  const value = useMemo<ThemeContextValue>(() => ({ theme, setTheme }), [theme, setTheme]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
