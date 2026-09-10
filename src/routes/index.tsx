@@ -938,10 +938,10 @@ function Index() {
                             return (
                               <td
                                 key={d}
-                                className={`relative border-l p-0 ${isToday ? "border-l-accent" : "border-grid-line"}`}
+                                className={`border-l p-0 ${isToday ? "border-l-accent" : "border-grid-line"}`}
                               >
                                 <span
-                                  className={`absolute left-0 top-0 h-full min-h-7 ${isToday ? "w-[60px]" : "w-8"} ${filled
+                                  className={`block h-7 ${isToday ? "w-[60px]" : "w-8"} ${filled
                                     ? habitColorClass[activeHabit.color]
                                     : isToday
                                       ? "bg-accent/50"
@@ -1601,13 +1601,13 @@ function SortableHabitRow({
         return (
           <td
             key={d}
-            className={`relative border-l p-0 ${isToday ? "border-l-accent" : "border-grid-line"}`}
+            className={`border-l p-0 ${isToday ? "border-l-accent" : "border-grid-line"}`}
           >
             <button
               onClick={() => onToggle(habit.id, d)}
               aria-label={`${habit.name} day ${d}`}
               aria-pressed={filled}
-              className={`absolute left-0 top-0 h-full min-h-7 ${isToday ? "w-[60px]" : "w-8"} transition-colors ${filled
+              className={`block h-7 ${isToday ? "w-[60px]" : "w-8"} transition-colors ${filled
                 ? `${habitColorClass[habit.color]} hover:opacity-80`
                 : `${isToday ? "bg-accent/50" : "bg-cell/40"} hover:bg-accent`
                 }`}
