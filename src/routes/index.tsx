@@ -962,6 +962,52 @@ function Index() {
 
             {/* Phone portrait only: today's checklist (no month grid) */}
             <div className="landscape:hidden md:hidden">
+              {allHabits.length > 0 && (
+                <div className="mb-4 rounded-lg border border-border bg-surface p-4 shadow-sm">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    Last 7 days
+                  </p>
+                  <div className="mt-2 grid grid-cols-7 gap-1">
+                    {Array.from({ length: 7 }, (_, i) => {
+                      const d = new Date(today);
+                      d.setDate(d.getDate() - (6 - i));
+                      const key = cellKey(monthKey(d), d.getDate());
+                      const done = allHabits.filter((h) =>
+                        (state.completions[h.id] ?? []).includes(key),
+                      ).length;
+                      const total = allHabits.length;
+                      const frac = total === 0 ? 0 : done / total;
+                      const r = 14;
+                      const c = 2 * Math.PI * r;
+                      const isTodayDot = i === 6;
+                      return (
+                        <div key={key} className="flex flex-col items-center gap-1">
+                          <svg viewBox="0 0 36 36" className="size-9" role="img"
+                            aria-label={`${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}: ${done} of ${total} done`}>
+                            <circle cx="18" cy="18" r={r} fill="none" strokeWidth="3.5"
+                              className="stroke-border" />
+                            <circle cx="18" cy="18" r={r} fill="none" strokeWidth="3.5"
+                              strokeLinecap="round"
+                              strokeDasharray={`${frac * c} ${c}`}
+                              transform="rotate(-90 18 18)"
+                              className={frac === 1 ? "stroke-primary" : "stroke-primary/70"} />
+                            <text x="18" y="18" textAnchor="middle" dominantBaseline="central"
+                              fontSize="11" fontWeight="700"
+                              className="fill-foreground">
+                              {done}
+                            </text>
+                          </svg>
+                          <span
+                            className={`font-mono text-[9px] uppercase ${isTodayDot ? "font-bold text-primary" : "text-muted-foreground"}`}
+                          >
+                            {d.toLocaleDateString("en-US", { weekday: "narrow" })}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <div className="mb-4 rounded-lg border border-border bg-surface p-4 shadow-sm">
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                   Today ·{" "}
