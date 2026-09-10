@@ -398,8 +398,6 @@ function Index() {
   // Mobile share page (full-screen overlay reusing live in-memory state).
   const [sharePage, setSharePage] = useState(false);
   const [shareDay, setShareDay] = useState<0 | 1>(0);
-  const canNativeShare =
-    typeof navigator !== "undefined" && typeof navigator.share === "function";
   // Resolved style for the share preview: stable unless inputs change.
   const previewStyle = useMemo(
     () =>
@@ -730,14 +728,7 @@ function Index() {
     toast.success(dayOffset === 0 ? "Today copied to clipboard!" : "Yesterday copied to clipboard!");
   };
 
-  const handleNativeShare = async (dayOffset: 0 | 1, styleIndex: number) => {
-    const text = buildShareText(dayOffset, styleIndex);
-    try {
-      await navigator.share({ text });
-    } catch {
-      /* dismissed — ignore */
-    }
-  };
+
 
   const allHabits = state.sections.flatMap((s) => s.habits);
   const doneToday = isCurrentMonth
@@ -1029,7 +1020,7 @@ function Index() {
                         key={d}
                         onClick={() => setShareDay(d)}
                         aria-pressed={shareDay === d}
-                        className={`rounded-lg py-2 font-mono text-[11px] uppercase tracking-[0.15em] transition-colors ${shareDay === d ? "bg-foreground text-background" : "text-muted-foreground"}`}
+                        className={`rounded-lg py-1.5 font-mono text-[10px] uppercase tracking-[0.15em] transition-colors ${shareDay === d ? "bg-foreground text-background" : "text-muted-foreground"}`}
                       >
                         {d === 0 ? "Today" : "Yesterday"}
                       </button>
@@ -1045,21 +1036,6 @@ function Index() {
                       <Clipboard className="size-4" />
                       Copy {shareDay === 0 ? "today" : "yesterday"}&apos;s check-in
                     </button>
-                    {canNativeShare && (
-                      <button
-                        onClick={() =>
-                          void handleNativeShare(
-                            shareDay,
-                            copyStyle === "shuffle" ? previewStyle : copyStyle,
-                          )
-                        }
-                        disabled={allHabits.length === 0}
-                        className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface py-3 text-[15px] font-medium transition-all active:scale-[0.98] disabled:opacity-40"
-                      >
-                        <Share2 className="size-4" />
-                        Share via…
-                      </button>
-                    )}
                   </div>
 
                   <div className="rounded-xl border border-border bg-surface p-4 shadow-sm">
