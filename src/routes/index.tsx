@@ -742,7 +742,7 @@ function Index() {
                 </button>
               )}
 
-              {allHabits.length === 0 ? (
+              {h.sections.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border bg-surface p-6 text-center">
                   <p className="text-sm font-medium">No habits yet</p>
                   <p className="mt-1 text-[13px] text-muted-foreground">
@@ -750,6 +750,12 @@ function Index() {
                   </p>
                 </div>
               ) : (
+                <>
+                {allHabits.length === 0 && (
+                  <p className="mb-3 text-center text-[13px] text-muted-foreground">
+                    Tap + Add habit under a group to start your checklist.
+                  </p>
+                )}
                 <div key={selectedKey} className="animate-day-switch flex flex-col gap-4">
                   {h.sections.map((section) => {
                     const sectionDone = section.habits.filter(
@@ -875,6 +881,7 @@ function Index() {
                     );
                   })}
                 </div>
+                </>
               )}
 
               <div className="mt-4">

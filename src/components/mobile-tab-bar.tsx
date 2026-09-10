@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { CalendarCheck, Crown, Palette, Share2, User, Zap } from "lucide-react";
+import { CalendarCheck, Crown, Palette, Share2, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 
@@ -87,7 +87,7 @@ export function MobileTabBar() {
             className={`${tab} ${active === "pro" ? "text-foreground" : "text-muted-foreground"}`}
           >
             <TabIcon on={active === "pro"}>
-              <Zap className="size-5" />
+              <Crown className="size-5" />
             </TabIcon>
             <span>Pro</span>
           </Link>
