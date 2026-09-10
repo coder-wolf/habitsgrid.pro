@@ -1063,16 +1063,16 @@ function Index() {
                                     </span>
                                     <span
                                       className="flex shrink-0 items-center gap-1"
-                                      aria-label="Last 5 days"
+                                      aria-label="Last 7 days"
                                     >
-                                      {Array.from({ length: 5 }, (_, i) => {
+                                      {Array.from({ length: 7 }, (_, i) => {
                                         const d = new Date(today);
-                                        d.setDate(d.getDate() - (4 - i));
+                                        d.setDate(d.getDate() - (6 - i));
                                         const key = cellKey(monthKey(d), d.getDate());
                                         const hit = (state.completions[habit.id] ?? []).includes(
                                           key,
                                         );
-                                        const isTodayDot = i === 4;
+                                        const isTodayDot = i === 6;
                                         return (
                                           <span
                                             key={key}
