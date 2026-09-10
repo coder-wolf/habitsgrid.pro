@@ -725,7 +725,7 @@ function Index() {
     : null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background font-sans text-foreground">
+    <div className="flex min-h-screen flex-col bg-background font-sans text-foreground max-md:portrait:pb-20">
       {/* SEO: crawlable H1 — app is client-rendered, so bots need static heading */}
       <h1 className="sr-only">
         HabitsGrid — Spreadsheet-Style Daily Habit Tracker
@@ -747,7 +747,7 @@ function Index() {
             onShiftMonth={shiftMonth}
             onToday={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
           />
-          <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-8">
+          <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-8 max-md:portrait:py-0">
             <div className="mb-4 flex items-center justify-between max-md:portrait:hidden">
               <p className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground landscape:block md:block">
                 {monthLabel} {yearLabel}

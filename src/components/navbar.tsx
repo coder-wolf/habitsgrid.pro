@@ -33,7 +33,7 @@ export function Navbar({
   const yearLabel = cursor.getFullYear();
 
   return (
-    <nav className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-md max-md:portrait:static">
+    <nav className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-md max-md:portrait:fixed max-md:portrait:bottom-0 max-md:portrait:left-0 max-md:portrait:right-0 max-md:portrait:top-auto max-md:portrait:border-b-0 max-md:portrait:border-t">
       <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4 sm:px-8">
         {/* Left: Logo + Title */}
         <Link to="/" className="flex items-center gap-2.5">
@@ -137,7 +137,7 @@ export function Navbar({
               {menuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-border bg-surface py-1 shadow-md">
+                  <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-border bg-surface py-1 shadow-md max-md:portrait:bottom-full max-md:portrait:top-auto max-md:portrait:mb-1 max-md:portrait:mt-0">
                     <div className="border-b border-border px-3 py-2">
                       <p className="truncate text-xs text-foreground">{user.email}</p>
                       <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
