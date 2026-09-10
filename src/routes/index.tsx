@@ -1007,7 +1007,7 @@ function Index() {
                             <text x="18" y="18" textAnchor="middle" dominantBaseline="central"
                               fontSize="11" fontWeight="700"
                               className="fill-foreground">
-                              {done}
+                              {d.getDate()}
                             </text>
                           </svg>
                           <span
