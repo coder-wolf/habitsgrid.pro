@@ -33,7 +33,7 @@ export function Navbar({
   const yearLabel = cursor.getFullYear();
 
   return (
-    <nav className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-md max-md:portrait:static">
       <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4 sm:px-8">
         {/* Left: Logo + Title */}
         <Link to="/" className="flex items-center gap-2.5">
