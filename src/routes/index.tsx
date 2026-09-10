@@ -391,10 +391,15 @@ function Index() {
   const days = useMemo(() => Array.from({ length: dayCount }, (_, i) => i + 1), [dayCount]);
   const isCurrentMonth = month === monthKey(today);
 
-  // Mobile checklist always targets today, regardless of the month cursor.
-  const todayMonth = monthKey(today);
-  const todayDay = today.getDate();
-  const todayKey = cellKey(todayMonth, todayDay);
+  // Mobile checklist targets the selected day (defaults to today).
+  // Tapping a ring in the 7-day strip switches the checklist to that day.
+  const [dayOffset, setDayOffset] = useState(0);
+  const selectedDay = useMemo(() => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - dayOffset);
+    return d;
+  }, [today, dayOffset]);
+  const selectedKey = cellKey(monthKey(selectedDay), selectedDay.getDate());
 
   const toggle = useCallback(
     (habitId: string, day: number) => {
@@ -408,17 +413,17 @@ function Index() {
     [month],
   );
 
-  const toggleToday = useCallback(
+  const toggleSelected = useCallback(
     (habitId: string) => {
       setState((prev) => {
         const list = prev.completions[habitId] ?? [];
-        const next = list.includes(todayKey)
-          ? list.filter((k) => k !== todayKey)
-          : [...list, todayKey];
+        const next = list.includes(selectedKey)
+          ? list.filter((k) => k !== selectedKey)
+          : [...list, selectedKey];
         return { ...prev, completions: { ...prev.completions, [habitId]: next } };
       });
     },
-    [todayKey],
+    [selectedKey],
   );
 
   const addHabit = (sectionId: string) => {
@@ -980,10 +985,18 @@ function Index() {
                       const r = 14;
                       const c = 2 * Math.PI * r;
                       const isTodayDot = i === 6;
+                      const isSelected = dayOffset === 6 - i;
                       return (
-                        <div key={key} className="flex flex-col items-center gap-1">
-                          <svg viewBox="0 0 36 36" className="size-9" role="img"
-                            aria-label={`${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}: ${done} of ${total} done`}>
+                        <button
+                          key={key}
+                          onClick={() => setDayOffset(6 - i)}
+                          aria-pressed={isSelected}
+                          aria-label={`${d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}: ${done} of ${total} done`}
+                          className={`flex flex-col items-center gap-1 rounded-lg p-1 transition-colors active:bg-secondary ${isSelected ? "bg-secondary" : ""}`}
+                        >
+                          <svg viewBox="0 0 36 36"
+                            className={`size-9 ${isTodayDot ? "rounded-full ring-2 ring-primary/60 ring-offset-2 ring-offset-surface" : ""}`} role="img"
+                            aria-hidden="true">
                             <circle cx="18" cy="18" r={r} fill="none" strokeWidth="3.5"
                               className="stroke-border" />
                             <circle cx="18" cy="18" r={r} fill="none" strokeWidth="3.5"
@@ -1002,42 +1015,32 @@ function Index() {
                           >
                             {d.toLocaleDateString("en-US", { weekday: "narrow" })}
                           </span>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
                 </div>
               )}
-              <div className="mb-4 rounded-lg border border-border bg-surface p-4 shadow-sm">
-                {(() => {
-                  const total = allHabits.length;
-                  const done = allHabits.filter((h) =>
-                    (state.completions[h.id] ?? []).includes(todayKey),
-                  ).length;
-                  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
-                  return (
-                    <>
-                      <div className="mt-1 flex items-baseline justify-between">
-                        <p className="text-xl font-bold tracking-tight">
-                          {done}/{total} done
-                        </p>
-                        <p className="font-mono text-[11px] text-muted-foreground">{pct}%</p>
-                      </div>
-                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
-                        <div
-                          className="h-full rounded-full bg-primary transition-all"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
 
               <p className="mb-4 flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                 <RotateCw className="size-3" />
                 Rotate to see the grid view
               </p>
+
+              {dayOffset > 0 && (
+                <button
+                  onClick={() => setDayOffset(0)}
+                  className="mb-3 w-full rounded-lg border border-border bg-surface px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground transition-colors active:bg-secondary"
+                >
+                  Viewing{" "}
+                  {selectedDay.toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  })}{" "}
+                  · Back to today
+                </button>
+              )}
 
               {allHabits.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border bg-surface p-6 text-center">
@@ -1050,7 +1053,7 @@ function Index() {
                 <div className="flex flex-col gap-4">
                   {state.sections.map((section) => {
                     const sectionDone = section.habits.filter((h) =>
-                      (state.completions[h.id] ?? []).includes(todayKey),
+                      (state.completions[h.id] ?? []).includes(selectedKey),
                     ).length;
                     return (
                       <section
@@ -1079,13 +1082,13 @@ function Index() {
                         {!section.collapsed && (
                           <ul className="divide-y divide-grid-line">
                             {section.habits.map((habit) => {
-                              const done = (state.completions[habit.id] ?? []).includes(todayKey);
+                              const done = (state.completions[habit.id] ?? []).includes(selectedKey);
                               return (
                                 <li key={habit.id}>
                                   <button
-                                    onClick={() => toggleToday(habit.id)}
+                                    onClick={() => toggleSelected(habit.id)}
                                     aria-pressed={done}
-                                    aria-label={`${habit.name} ${done ? "done" : "not done"} today`}
+                                    aria-label={`${habit.name} ${done ? "done" : "not done"} on ${selectedDay.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
                                     className="flex min-h-[44px] w-full items-center gap-2.5 px-3 py-2 text-left transition-colors active:bg-secondary"
                                   >
                                     <span
