@@ -1065,7 +1065,7 @@ function Index() {
                   </p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-4">
+                <div key={selectedKey} className="animate-day-switch flex flex-col gap-4">
                   {state.sections.map((section) => {
                     const sectionDone = section.habits.filter((h) =>
                       (state.completions[h.id] ?? []).includes(selectedKey),

@@ -533,6 +533,28 @@
   }
 }
 
+/* Day-switch transition for the mobile checklist */
+@keyframes day-switch {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-day-switch {
+  animation: day-switch 0.25s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-day-switch {
+    animation: none;
+  }
+}
+
 /* Hide interactive elements during screenshot export */
 .exporting .group-hover\:opacity-0,
 .exporting [class*="group-hover"],
