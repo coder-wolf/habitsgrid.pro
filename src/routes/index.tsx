@@ -1036,6 +1036,32 @@ function Index() {
                     ))}
                   </div>
 
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => void handleCopyText(shareDay)}
+                      disabled={allHabits.length === 0}
+                      className="flex items-center justify-center gap-2 rounded-xl bg-foreground py-3 text-[15px] font-semibold text-background transition-all active:scale-[0.98] disabled:opacity-40"
+                    >
+                      <Clipboard className="size-4" />
+                      Copy {shareDay === 0 ? "today" : "yesterday"}&apos;s check-in
+                    </button>
+                    {canNativeShare && (
+                      <button
+                        onClick={() =>
+                          void handleNativeShare(
+                            shareDay,
+                            copyStyle === "shuffle" ? previewStyle : copyStyle,
+                          )
+                        }
+                        disabled={allHabits.length === 0}
+                        className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface py-3 text-[15px] font-medium transition-all active:scale-[0.98] disabled:opacity-40"
+                      >
+                        <Share2 className="size-4" />
+                        Share via…
+                      </button>
+                    )}
+                  </div>
+
                   <div className="rounded-xl border border-border bg-surface p-4 shadow-sm">
                     <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                       Preview
@@ -1077,33 +1103,7 @@ function Index() {
                         </button>
                       ))}
                     </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={() => void handleCopyText(shareDay)}
-                      disabled={allHabits.length === 0}
-                      className="flex items-center justify-center gap-2 rounded-xl bg-foreground py-3 text-[15px] font-semibold text-background transition-all active:scale-[0.98] disabled:opacity-40"
-                    >
-                      <Clipboard className="size-4" />
-                      Copy {shareDay === 0 ? "today" : "yesterday"}&apos;s check-in
-                    </button>
-                    {canNativeShare && (
-                      <button
-                        onClick={() =>
-                          void handleNativeShare(
-                            shareDay,
-                            copyStyle === "shuffle" ? previewStyle : copyStyle,
-                          )
-                        }
-                        disabled={allHabits.length === 0}
-                        className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface py-3 text-[15px] font-medium transition-all active:scale-[0.98] disabled:opacity-40"
-                      >
-                        <Share2 className="size-4" />
-                        Share via…
-                      </button>
-                    )}
-                    <p className="text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                       Want the grid image? Rotate for Capture
                     </p>
                   </div>
