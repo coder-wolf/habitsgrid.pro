@@ -1009,14 +1009,6 @@ function Index() {
                 </div>
               )}
               <div className="mb-4 rounded-lg border border-border bg-surface p-4 shadow-sm">
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  Today ·{" "}
-                  {today.toLocaleDateString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </p>
                 {(() => {
                   const total = allHabits.length;
                   const done = allHabits.filter((h) =>
