@@ -1020,7 +1020,7 @@ function Index() {
                         key={d}
                         onClick={() => setShareDay(d)}
                         aria-pressed={shareDay === d}
-                        className={`rounded-lg py-1.5 font-mono text-[10px] uppercase tracking-[0.15em] transition-colors ${shareDay === d ? "bg-foreground text-background" : "text-muted-foreground"}`}
+                        className={`rounded-lg py-2 font-mono text-[11px] uppercase tracking-[0.15em] transition-colors ${shareDay === d ? "bg-foreground text-background" : "text-muted-foreground"}`}
                       >
                         {d === 0 ? "Today" : "Yesterday"}
                       </button>
@@ -1031,7 +1031,7 @@ function Index() {
                     <button
                       onClick={() => void handleCopyText(shareDay)}
                       disabled={allHabits.length === 0}
-                      className="flex items-center justify-center gap-2 rounded-xl bg-foreground py-3 text-[15px] font-semibold text-background transition-all active:scale-[0.98] disabled:opacity-40"
+                      className="flex items-center justify-center gap-2 rounded-xl bg-foreground py-2 text-[15px] font-semibold text-background transition-all active:scale-[0.98] disabled:opacity-40"
                     >
                       <Clipboard className="size-4" />
                       Copy {shareDay === 0 ? "today" : "yesterday"}&apos;s check-in
