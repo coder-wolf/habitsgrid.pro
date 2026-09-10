@@ -42,7 +42,7 @@ export function buildShareText(
   let total = 0;
   let doneCount = 0;
 
-  const [doneMark, missMark] = COPY_STATUS_STYLES[styleIndex];
+  const [doneMark, missMark] = COPY_STATUS_STYLES[styleIndex] ?? COPY_STATUS_STYLES[0]!;
   const headerEmoji = HEADER_EMOJIS[Math.floor(Math.random() * HEADER_EMOJIS.length)];
 
   for (const section of sections) {

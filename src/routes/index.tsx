@@ -469,7 +469,7 @@ function Index() {
                     title={
                       copyStyle === "shuffle"
                         ? "Copy today's check-in (shuffles emoji style)"
-                        : `Copy today's check-in (${COPY_STATUS_STYLES[copyStyle][2]} style)`
+                        : `Copy today's check-in (${COPY_STATUS_STYLES[copyStyle]?.[2] ?? "Classic"} style)`
                     }
                     className="inline-flex items-center gap-1 rounded-md rounded-r-none border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
@@ -681,8 +681,8 @@ function Index() {
                       const d = new Date(today);
                       d.setDate(d.getDate() - (6 - i));
                       const key = cellKey(monthKey(d), d.getDate());
-                      const done = allHabits.filter((h) =>
-                        (h.completions[h.id] ?? []).includes(key),
+                      const done = allHabits.filter(
+                        (habit) => (h.completions[habit.id] ?? []).includes(key),
                       ).length;
                       const total = allHabits.length;
                       const pct = total === 0 ? 0 : Math.round((done / total) * 100);
@@ -754,8 +754,8 @@ function Index() {
               ) : (
                 <div key={selectedKey} className="animate-day-switch flex flex-col gap-4">
                   {h.sections.map((section) => {
-                    const sectionDone = section.habits.filter((h) =>
-                      (h.completions[h.id] ?? []).includes(selectedKey),
+                    const sectionDone = section.habits.filter(
+                      (habit) => (h.completions[habit.id] ?? []).includes(selectedKey),
                     ).length;
                     return (
                       <section
