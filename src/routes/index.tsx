@@ -976,17 +976,24 @@ function Index() {
             {/* Phone portrait only: today's checklist (no month grid) */}
             <div className="landscape:hidden md:hidden">
               {allHabits.length > 0 && (
-                <div className="sticky top-14 z-10 -mx-4 mb-4 bg-background/95 px-4 py-2 backdrop-blur-sm">
-                  <div className="mb-2 flex items-baseline justify-between px-1">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                      This week
+                <div className="sticky top-14 z-10 -mx-4 mb-4 border-b border-border/60 bg-background/95 px-4 pb-3 pt-2 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.3)] backdrop-blur-md">
+                  <div className="mb-2 flex items-center justify-between px-1">
+                    <p className="text-[17px] font-bold tracking-tight">
+                      {selectedDay.toLocaleDateString("en-US", { month: "long" })}{" "}
+                      <span className="font-normal text-muted-foreground">
+                        {selectedDay.getFullYear()}
+                      </span>
                     </p>
-                    <p className="font-mono text-[10px] text-muted-foreground">
-                      {selectedDay.toLocaleDateString("en-US", {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                    <p
+                      className={`rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.15em] ${dayOffset === 0 ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+                    >
+                      {dayOffset === 0
+                        ? "Today"
+                        : selectedDay.toLocaleDateString("en-US", {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                          })}
                     </p>
                   </div>
                   <div className="grid grid-cols-7 gap-1.5">
