@@ -748,7 +748,7 @@ function Index() {
             onToday={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
           />
           <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-8">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between max-md:portrait:hidden">
               <p className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground landscape:block md:block">
                 {monthLabel} {yearLabel}
               </p>
