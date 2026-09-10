@@ -36,13 +36,13 @@ export function MobileTabBar() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed bottom-4 left-4 right-4 z-30 hidden rounded-[28px] border border-foreground/10 bg-background/[0.07] shadow-[inset_0_0.5px_0_rgba(255,255,255,0.3),0_16px_48px_-16px_rgba(0,0,0,0.25)] backdrop-blur-2xl backdrop-saturate-[1.8] [padding-bottom:env(safe-area-inset-bottom)] max-md:portrait:block"
+      className="fixed bottom-4 left-4 right-4 z-30 hidden rounded-[28px] border border-foreground/10 bg-background/[0.03] shadow-[inset_0_0.5px_0_rgba(255,255,255,0.3),0_16px_48px_-16px_rgba(0,0,0,0.25)] backdrop-blur-2xl backdrop-saturate-[1.8] [padding-bottom:env(safe-area-inset-bottom)] max-md:portrait:block"
     >
       <div className="flex items-stretch gap-1 px-3 pb-1.5 pt-2">
         <Link
           to="/"
           aria-label="Today"
-          className={`${tab} ${active === "today" ? "text-foreground" : "text-muted-foreground"}`}
+          className={`${tab} ${active === "today" ? "text-foreground" : "text-foreground/70"}`}
         >
           <TabIcon on={active === "today"}>
             <CalendarCheck className="size-5" />
@@ -52,7 +52,7 @@ export function MobileTabBar() {
         <Link
           to="/share"
           aria-label="Share"
-          className={`${tab} ${active === "share" ? "text-foreground" : "text-muted-foreground"}`}
+          className={`${tab} ${active === "share" ? "text-foreground" : "text-foreground/70"}`}
         >
           <TabIcon on={active === "share"}>
             <Share2 className="size-5" />
@@ -62,7 +62,7 @@ export function MobileTabBar() {
         <Link
           to="/themes"
           aria-label="Theme"
-          className={`${tab} ${active === "theme" ? "text-foreground" : "text-muted-foreground"}`}
+          className={`${tab} ${active === "theme" ? "text-foreground" : "text-foreground/70"}`}
         >
           <TabIcon on={active === "theme"}>
             <Palette className="size-5" />
@@ -73,7 +73,7 @@ export function MobileTabBar() {
           <Link
             to="/settings/billing"
             aria-label="Billing"
-            className={`${tab} ${active === "pro" ? "text-foreground" : "text-muted-foreground"}`}
+            className={`${tab} ${active === "pro" ? "text-foreground" : "text-foreground/70"}`}
           >
             <TabIcon on={active === "pro"}>
               <Crown className="size-5" />
@@ -84,7 +84,7 @@ export function MobileTabBar() {
           <Link
             to="/onboarding"
             aria-label="Upgrade to Pro"
-            className={`${tab} ${active === "pro" ? "text-foreground" : "text-muted-foreground"}`}
+            className={`${tab} ${active === "pro" ? "text-foreground" : "text-foreground/70"}`}
           >
             <TabIcon on={active === "pro"}>
               <Crown className="size-5" />
@@ -95,7 +95,7 @@ export function MobileTabBar() {
         <Link
           to="/account"
           aria-label="Account"
-          className={`${tab} ${active === "account" ? "text-foreground" : "text-muted-foreground"}`}
+          className={`${tab} ${active === "account" ? "text-foreground" : "text-foreground/70"}`}
         >
           <TabIcon on={active === "account"}>
             {user ? (
