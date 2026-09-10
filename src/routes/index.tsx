@@ -976,7 +976,7 @@ function Index() {
             {/* Phone portrait only: today's checklist (no month grid) */}
             <div className="landscape:hidden md:hidden">
               {allHabits.length > 0 && (
-                <div className="mb-4">
+                <div className="sticky top-14 z-10 -mx-4 mb-4 bg-background/95 px-4 py-2 backdrop-blur-sm">
                   <div className="mb-2 flex items-baseline justify-between px-1">
                     <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                       This week
