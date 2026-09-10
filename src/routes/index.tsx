@@ -394,6 +394,7 @@ function Index() {
   // Mobile checklist targets the selected day (defaults to today).
   // Tapping a ring in the 7-day strip switches the checklist to that day.
   const [dayOffset, setDayOffset] = useState(0);
+  const [shareOpen, setShareOpen] = useState(false);
   const selectedDay = useMemo(() => {
     const d = new Date(today);
     d.setDate(d.getDate() - dayOffset);
@@ -747,7 +748,7 @@ function Index() {
             onToday={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
           />
           <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-8">
-            <div className="mb-4 flex items-center justify-between max-md:portrait:flex-col max-md:portrait:items-stretch max-md:portrait:gap-2">
+            <div className="mb-4 flex items-center justify-between">
               <p className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground landscape:block md:block">
                 {monthLabel} {yearLabel}
               </p>
@@ -774,25 +775,39 @@ function Index() {
                   )}
                   {sharing ? "Exporting..." : "Capture"}
                 </button>
-                <span className="inline-flex max-md:portrait:justify-end">
+                <button
+                  onClick={() => setShareOpen((v) => !v)}
+                  aria-expanded={shareOpen}
+                  aria-label="Share options"
+                  className="inline-flex items-center rounded-md border border-border bg-surface px-2 py-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden landscape:hidden"
+                >
+                  <Share2 className="size-3" />
+                </button>
+                <span className={`inline-flex ${shareOpen ? "" : "max-md:portrait:hidden"}`}>
                   <button
-                    onClick={() => void handleCopyText(0)}
+                    onClick={() => {
+                      void handleCopyText(0);
+                      setShareOpen(false);
+                    }}
                     disabled={allHabits.length === 0}
                     title={
                       copyStyle === "shuffle"
                         ? "Copy today's check-in (shuffles emoji style)"
                         : `Copy today's check-in (${COPY_STATUS_STYLES[copyStyle][2]} style)`
                     }
-                    className="inline-flex items-center gap-1 rounded-md rounded-r-none border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50 max-md:portrait:gap-0.5 max-md:portrait:px-1.5 max-md:portrait:py-1 max-md:portrait:text-[9px]"
+                    className="inline-flex items-center gap-1 rounded-md rounded-r-none border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
-                    <Clipboard className="size-3 max-md:portrait:hidden" />
+                    <Clipboard className="size-3" />
                     Today
                   </button>
                   <button
-                    onClick={() => void handleCopyText(1)}
+                    onClick={() => {
+                      void handleCopyText(1);
+                      setShareOpen(false);
+                    }}
                     disabled={allHabits.length === 0}
                     title="Copy yesterday's check-in"
-                    className="inline-flex items-center rounded-md rounded-none -ml-px border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50 max-md:portrait:px-1.5 max-md:portrait:py-1 max-md:portrait:text-[9px]"
+                    className="inline-flex items-center rounded-md rounded-none -ml-px border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
                     Yesterday
                   </button>
@@ -801,7 +816,7 @@ function Index() {
                       <button
                         aria-label="Choose copy text style"
                         disabled={allHabits.length === 0}
-                        className="inline-flex items-center rounded-md rounded-l-none -ml-px border border-border bg-surface px-2 py-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50 max-md:portrait:px-1.5 max-md:portrait:py-1"
+                        className="inline-flex items-center rounded-md rounded-l-none -ml-px border border-border bg-surface px-2 py-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
                       >
                         <ChevronDown className="size-3" />
                       </button>
