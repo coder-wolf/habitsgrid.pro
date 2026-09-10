@@ -747,7 +747,7 @@ function Index() {
             onToday={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
           />
           <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-8">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between max-md:portrait:flex-col max-md:portrait:items-stretch max-md:portrait:gap-2">
               <p className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground landscape:block md:block">
                 {monthLabel} {yearLabel}
               </p>
@@ -774,7 +774,7 @@ function Index() {
                   )}
                   {sharing ? "Exporting..." : "Capture"}
                 </button>
-                <span className="inline-flex">
+                <span className="inline-flex max-md:portrait:justify-end">
                   <button
                     onClick={() => void handleCopyText(0)}
                     disabled={allHabits.length === 0}
@@ -783,16 +783,16 @@ function Index() {
                         ? "Copy today's check-in (shuffles emoji style)"
                         : `Copy today's check-in (${COPY_STATUS_STYLES[copyStyle][2]} style)`
                     }
-                    className="inline-flex items-center gap-1 rounded-md rounded-r-none border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                    className="inline-flex items-center gap-1 rounded-md rounded-r-none border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50 max-md:portrait:gap-0.5 max-md:portrait:px-1.5 max-md:portrait:py-1 max-md:portrait:text-[9px]"
                   >
-                    <Clipboard className="size-3" />
+                    <Clipboard className="size-3 max-md:portrait:hidden" />
                     Today
                   </button>
                   <button
                     onClick={() => void handleCopyText(1)}
                     disabled={allHabits.length === 0}
                     title="Copy yesterday's check-in"
-                    className="inline-flex items-center rounded-md rounded-none -ml-px border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                    className="inline-flex items-center rounded-md rounded-none -ml-px border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50 max-md:portrait:px-1.5 max-md:portrait:py-1 max-md:portrait:text-[9px]"
                   >
                     Yesterday
                   </button>
@@ -801,7 +801,7 @@ function Index() {
                       <button
                         aria-label="Choose copy text style"
                         disabled={allHabits.length === 0}
-                        className="inline-flex items-center rounded-md rounded-l-none -ml-px border border-border bg-surface px-2 py-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                        className="inline-flex items-center rounded-md rounded-l-none -ml-px border border-border bg-surface px-2 py-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50 max-md:portrait:px-1.5 max-md:portrait:py-1"
                       >
                         <ChevronDown className="size-3" />
                       </button>
