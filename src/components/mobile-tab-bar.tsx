@@ -6,10 +6,10 @@ import { useAuth } from "@/lib/auth";
 const tab =
   "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 font-mono text-[9px] uppercase tracking-wider transition-colors active:bg-secondary";
 
-function TabPill({ on, children }: { on: boolean; children: ReactNode }) {
+function TabIcon({ on, children }: { on: boolean; children: ReactNode }) {
   return (
     <span
-      className={`flex h-8 w-14 items-center justify-center rounded-full transition-all active:scale-95 ${on ? "bg-primary/15 text-primary" : ""}`}
+      className={`transition-all active:scale-90 ${on ? "text-primary" : ""}`}
     >
       {children}
     </span>
@@ -36,7 +36,7 @@ export function MobileTabBar() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed bottom-4 left-4 right-4 z-30 hidden rounded-[28px] border border-foreground/10 bg-secondary/85 bg-gradient-to-b from-white/10 to-transparent shadow-[0_12px_40px_-12px_rgba(0,0,0,0.35)] backdrop-blur-xl [padding-bottom:env(safe-area-inset-bottom)] max-md:portrait:block"
+      className="fixed bottom-4 left-4 right-4 z-30 hidden rounded-[28px] border border-foreground/10 bg-background/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_16px_48px_-12px_rgba(0,0,0,0.3)] backdrop-blur-2xl backdrop-saturate-150 [padding-bottom:env(safe-area-inset-bottom)] max-md:portrait:block"
     >
       <div className="flex items-stretch gap-1 px-3 pb-1.5 pt-2">
         <Link
@@ -44,9 +44,9 @@ export function MobileTabBar() {
           aria-label="Today"
           className={`${tab} ${active === "today" ? "text-foreground" : "text-muted-foreground"}`}
         >
-          <TabPill on={active === "today"}>
+          <TabIcon on={active === "today"}>
             <CalendarCheck className="size-5" />
-          </TabPill>
+          </TabIcon>
           <span>Today</span>
         </Link>
         <Link
@@ -54,9 +54,9 @@ export function MobileTabBar() {
           aria-label="Share"
           className={`${tab} ${active === "share" ? "text-foreground" : "text-muted-foreground"}`}
         >
-          <TabPill on={active === "share"}>
+          <TabIcon on={active === "share"}>
             <Share2 className="size-5" />
-          </TabPill>
+          </TabIcon>
           <span>Share</span>
         </Link>
         <Link
@@ -64,9 +64,9 @@ export function MobileTabBar() {
           aria-label="Theme"
           className={`${tab} ${active === "theme" ? "text-foreground" : "text-muted-foreground"}`}
         >
-          <TabPill on={active === "theme"}>
+          <TabIcon on={active === "theme"}>
             <Palette className="size-5" />
-          </TabPill>
+          </TabIcon>
           <span>Theme</span>
         </Link>
         {isPro ? (
@@ -75,9 +75,9 @@ export function MobileTabBar() {
             aria-label="Billing"
             className={`${tab} ${active === "pro" ? "text-foreground" : "text-muted-foreground"}`}
           >
-            <TabPill on={active === "pro"}>
+            <TabIcon on={active === "pro"}>
               <Crown className="size-5" />
-            </TabPill>
+            </TabIcon>
             <span>Pro</span>
           </Link>
         ) : (
@@ -86,9 +86,9 @@ export function MobileTabBar() {
             aria-label="Upgrade to Pro"
             className={`${tab} ${active === "pro" ? "text-foreground" : "text-muted-foreground"}`}
           >
-            <TabPill on={active === "pro"}>
+            <TabIcon on={active === "pro"}>
               <Zap className="size-5" />
-            </TabPill>
+            </TabIcon>
             <span>Pro</span>
           </Link>
         )}
@@ -97,7 +97,7 @@ export function MobileTabBar() {
           aria-label="Account"
           className={`${tab} ${active === "account" ? "text-foreground" : "text-muted-foreground"}`}
         >
-          <TabPill on={active === "account"}>
+          <TabIcon on={active === "account"}>
             {user ? (
               <span className="flex size-5 items-center justify-center rounded-full bg-primary/10">
                 <span className="text-[10px] font-medium text-primary">
@@ -107,7 +107,7 @@ export function MobileTabBar() {
             ) : (
               <User className="size-5" />
             )}
-          </TabPill>
+          </TabIcon>
           <span>Account</span>
         </Link>
       </div>
