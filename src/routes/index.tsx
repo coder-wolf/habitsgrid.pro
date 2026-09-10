@@ -14,14 +14,13 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, ChevronLeft, ChevronRight, ChevronDown, Share2, Download, Clipboard, Shuffle, Check, RotateCw } from "lucide-react";
+import { GripVertical, ChevronRight, ChevronDown, Share2, Download, Clipboard, Shuffle, Check, RotateCw } from "lucide-react";
 import { toast } from "sonner";
 import { toPng } from "html-to-image";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -34,8 +33,15 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Navbar } from "@/components/navbar";
+import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { useHabits } from "@/lib/habits-store";
+import {
+  COPY_STATUS_STYLES,
+  COPY_STYLE_KEY,
+  buildShareText,
+  randomCopyStyle,
+} from "@/lib/share-text";
 import { UpgradeDialog } from "@/components/upgrade-dialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { OnboardingFlow } from "@/components/onboarding-flow";
@@ -44,11 +50,8 @@ import {
   cellKey,
   daysInMonth,
   habitColorClass,
-  makeHabit,
-  makeSection,
   monthKey,
   weekdayLabel,
-  STORAGE_KEY,
   type Completions,
   type Habit,
   type Section,
@@ -119,19 +122,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Index,
 });
-
-type State = { sections: Section[]; completions: Completions };
-
-// Copy-to-social status-mark styles: [done, missed, label].
-const COPY_STATUS_STYLES: Array<[string, string, string]> = [
-  ["✅", "❌", "Classic"],
-  ["🟩", "⬜", "Blocks"],
-  ["🟢", "⚪", "Dots"],
-  ["🔥", "😴", "Fire"],
-  ["✔️", "✖️", "Mono"],
-  ["🩷", "🤍", "Pink"],
-];
-const COPY_STYLE_KEY = "habitsgrid-copy-style";
 
 function InlineEdit({
   value,
@@ -215,7 +205,7 @@ function Index() {
   const today = useMemo(() => new Date(), []);
   const { user, loading: authLoading, isPro } = useAuth();
   const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
-  const [state, setState] = useState<State>({ sections: [], completions: {} });
+  const h = useHabits();
   const [adding, setAdding] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [upgradeOpen, setUpgradeOpen] = useState(false);
@@ -243,9 +233,6 @@ function Index() {
     }
   }, [copyStyle]);
 
-  const stateRef = useRef<State>({ sections: [], completions: {} });
-  const cloudReadyRef = useRef<string | null>(null);
-  const lastSyncErrorRef = useRef<string | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const [sharing, setSharing] = useState(false);
 
@@ -268,124 +255,6 @@ function Index() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  // Cloud-first lifecycle: fetch on login, clear on logout. Requires Pro subscription.
-  useEffect(() => {
-    if (!authResolved) return;
-
-    if (!user) {
-      setState({ sections: [], completions: {} });
-      cloudReadyRef.current = null;
-      localStorage.removeItem(STORAGE_KEY);
-      return;
-    }
-
-    // Free users stay on localStorage only
-    if (!isPro) {
-      cloudReadyRef.current = null;
-      // Load from localStorage for free users
-      const local = (() => {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (raw) {
-            const parsed = JSON.parse(raw) as State;
-            if (parsed.sections?.length) return parsed;
-          }
-        } catch {
-          /* ignore */
-        }
-        return null;
-      })();
-      if (local) setState(local);
-      return;
-    }
-
-    const client = supabase;
-    if (!client) return;
-
-    const uid = user.id;
-    let cancelled = false;
-    cloudReadyRef.current = null;
-
-    (async () => {
-      try {
-        const { data, error } = await client
-          .from("user_state")
-          .select("data")
-          .eq("user_id", uid)
-          .maybeSingle();
-        if (cancelled) return;
-        if (error) throw error;
-
-        const remote = (data?.data ?? null) as Partial<State> | null;
-        if (remote && Array.isArray(remote.sections)) {
-          setState({ sections: remote.sections, completions: remote.completions ?? {} });
-        } else {
-          // First time on this device: seed cloud from localStorage if it has data.
-          const local = (() => {
-            try {
-              const raw = localStorage.getItem(STORAGE_KEY);
-              if (raw) {
-                const parsed = JSON.parse(raw) as State;
-                if (parsed.sections?.length) return parsed;
-              }
-            } catch {
-              /* ignore */
-            }
-            return null;
-          })();
-
-          if (local) {
-            setState(local);
-            const seeded = await client.from("user_state").upsert({ user_id: uid, data: local });
-            if (seeded.error) throw seeded.error;
-          }
-        }
-        cloudReadyRef.current = uid;
-      } catch (err) {
-        console.error(err);
-        if (!cancelled) toast.error("Could not load your synced habits.");
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [user, authResolved, isPro]);
-
-  // Cache state to localStorage while signed in.
-  useEffect(() => {
-    if (!authResolved || !user) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state, authResolved, user]);
-
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
-
-  // Debounced push of local changes to the cloud (Pro only).
-  useEffect(() => {
-    const client = supabase;
-    if (!client || !user || !authResolved || !isPro) return;
-    if (cloudReadyRef.current !== user.id) return;
-    const t = setTimeout(() => {
-      void client
-        .from("user_state")
-        .upsert({ user_id: user.id, data: state })
-        .then(({ error }) => {
-          if (!error) {
-            lastSyncErrorRef.current = null;
-            return;
-          }
-          console.error("Cloud sync failed:", error.message);
-          if (lastSyncErrorRef.current !== error.message) {
-            lastSyncErrorRef.current = error.message;
-            toast.error(`Cloud sync failed: ${error.message}`);
-          }
-        });
-    }, 800);
-    return () => clearTimeout(t);
-  }, [state, user, authResolved, isPro]);
-
   const month = monthKey(cursor);
   const dayCount = daysInMonth(cursor);
   const days = useMemo(() => Array.from({ length: dayCount }, (_, i) => i + 1), [dayCount]);
@@ -394,19 +263,6 @@ function Index() {
   // Mobile checklist targets the selected day (defaults to today).
   // Tapping a ring in the 7-day strip switches the checklist to that day.
   const [dayOffset, setDayOffset] = useState(0);
-  const [shareOpen, setShareOpen] = useState(false);
-  // Mobile share page (full-screen overlay reusing live in-memory state).
-  const [sharePage, setSharePage] = useState(false);
-  const [shareDay, setShareDay] = useState<0 | 1>(0);
-  // Resolved style for the share preview: stable unless inputs change.
-  const previewStyle = useMemo(
-    () =>
-      copyStyle === "shuffle"
-        ? Math.floor(Math.random() * COPY_STATUS_STYLES.length)
-        : copyStyle,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [copyStyle, shareDay, state.sections, state.completions],
-  );
   const selectedDay = useMemo(() => {
     const d = new Date(today);
     d.setDate(d.getDate() - dayOffset);
@@ -416,115 +272,22 @@ function Index() {
 
   const toggle = useCallback(
     (habitId: string, day: number) => {
-      const key = cellKey(month, day);
-      setState((prev) => {
-        const list = prev.completions[habitId] ?? [];
-        const next = list.includes(key) ? list.filter((k) => k !== key) : [...list, key];
-        return { ...prev, completions: { ...prev.completions, [habitId]: next } };
-      });
+      h.toggleCell(habitId, cellKey(month, day));
     },
-    [month],
+    [h, month],
   );
 
   const toggleSelected = useCallback(
     (habitId: string) => {
-      setState((prev) => {
-        const list = prev.completions[habitId] ?? [];
-        const next = list.includes(selectedKey)
-          ? list.filter((k) => k !== selectedKey)
-          : [...list, selectedKey];
-        return { ...prev, completions: { ...prev.completions, [habitId]: next } };
-      });
+      h.toggleCell(habitId, selectedKey);
     },
-    [selectedKey],
+    [h, selectedKey],
   );
 
-  const addHabit = (sectionId: string) => {
-    const name = draft.trim();
-    if (!name) return;
-    setState((prev) => ({
-      ...prev,
-      sections: prev.sections.map((s) =>
-        s.id === sectionId
-          ? {
-            ...s,
-            habits: [
-              ...s.habits,
-              makeHabit(name, null, ((s.habits.length % 6) + 1) as Habit["color"]),
-            ],
-          }
-          : s,
-      ),
-    }));
+  const commitDraftAdd = (sectionId: string) => {
+    h.addHabit(sectionId, draft);
     setDraft("");
     setAdding(null);
-  };
-
-  const removeHabit = (sectionId: string, habitId: string) => {
-    setState((prev) => ({
-      ...prev,
-      sections: prev.sections.map((s) =>
-        s.id === sectionId ? { ...s, habits: s.habits.filter((h) => h.id !== habitId) } : s,
-      ),
-    }));
-  };
-
-  const renameHabit = (sectionId: string, habitId: string, name: string) => {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    setState((prev) => ({
-      ...prev,
-      sections: prev.sections.map((s) =>
-        s.id === sectionId
-          ? { ...s, habits: s.habits.map((h) => (h.id === habitId ? { ...h, name: trimmed } : h)) }
-          : s,
-      ),
-    }));
-  };
-
-  const recolorHabit = (sectionId: string, habitId: string, color: Habit["color"]) => {
-    setState((prev) => ({
-      ...prev,
-      sections: prev.sections.map((s) =>
-        s.id === sectionId
-          ? { ...s, habits: s.habits.map((h) => (h.id === habitId ? { ...h, color } : h)) }
-          : s,
-      ),
-    }));
-  };
-
-  const addSection = (name: string) => {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    setState((prev) => ({
-      ...prev,
-      sections: [...prev.sections, makeSection(trimmed)],
-    }));
-  };
-
-  const removeSection = (sectionId: string) => {
-    setState((prev) => ({
-      ...prev,
-      sections: prev.sections.filter((s) => s.id !== sectionId),
-    }));
-  };
-
-  const renameSection = (sectionId: string, name: string) => {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    setState((prev) => ({
-      ...prev,
-      sections: prev.sections.map((s) => (s.id === sectionId ? { ...s, name: trimmed } : s)),
-    }));
-  };
-
-  const toggleSection = (sectionId: string) => {
-    setState((prev) => ({
-      ...prev,
-      sections: prev.sections.map((s) =>
-        s.id === sectionId ? { ...s, collapsed: !s.collapsed } : s,
-      ),
-    }));
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -532,61 +295,29 @@ function Index() {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const activeId = active.id as string;
+    const dragId = active.id as string;
     const overId = over.id as string;
 
-    const activeIsSection = state.sections.some((s) => s.id === activeId);
-    const overIsSection = state.sections.some((s) => s.id === overId);
+    const activeIsSection = h.sections.some((s) => s.id === dragId);
+    const overIsSection = h.sections.some((s) => s.id === overId);
 
     if (activeIsSection && overIsSection) {
-      setState((prev) => {
-        const oldIndex = prev.sections.findIndex((s) => s.id === activeId);
-        const newIndex = prev.sections.findIndex((s) => s.id === overId);
-        return { ...prev, sections: arrayMove(prev.sections, oldIndex, newIndex) };
-      });
+      h.reorderSections(dragId, overId);
       return;
     }
 
     if (activeIsSection || overIsSection) return;
 
-    const sourceSection = state.sections.find((s) => s.habits.some((h) => h.id === activeId));
-    const destSection = state.sections.find((s) => s.habits.some((h) => h.id === overId));
+    const sourceSection = h.sections.find((s) => s.habits.some((hh) => hh.id === dragId));
+    const destSection = h.sections.find((s) => s.habits.some((hh) => hh.id === overId));
 
     if (!sourceSection || !destSection) return;
 
-    setState((prev) => {
-      if (sourceSection.id === destSection.id) {
-        return {
-          ...prev,
-          sections: prev.sections.map((s) => {
-            if (s.id !== sourceSection.id) return s;
-            const oldIndex = s.habits.findIndex((h) => h.id === activeId);
-            const newIndex = s.habits.findIndex((h) => h.id === overId);
-            return { ...s, habits: arrayMove(s.habits, oldIndex, newIndex) };
-          }),
-        };
-      }
-
-      const source = prev.sections.find((s) => s.id === sourceSection.id)!;
-      const dest = prev.sections.find((s) => s.id === destSection.id)!;
-      const activeHabit = source.habits.find((h) => h.id === activeId)!;
-      const overIndex = dest.habits.findIndex((h) => h.id === overId);
-
-      return {
-        ...prev,
-        sections: prev.sections.map((s) => {
-          if (s.id === sourceSection.id) {
-            return { ...s, habits: s.habits.filter((h) => h.id !== activeId) };
-          }
-          if (s.id === destSection.id) {
-            const newHabits = [...dest.habits];
-            newHabits.splice(overIndex, 0, activeHabit);
-            return { ...s, habits: newHabits };
-          }
-          return s;
-        }),
-      };
-    });
+    if (sourceSection.id === destSection.id) {
+      h.reorderHabits(sourceSection.id, dragId, overId);
+    } else {
+      h.moveHabit(sourceSection.id, destSection.id, dragId, overId);
+    }
   };
 
   const shiftMonth = (delta: number) =>
@@ -661,85 +392,26 @@ function Index() {
     }
   };
 
-  const buildShareText = (dayOffset: 0 | 1, styleIndex: number) => {
-    // Copy target: today or yesterday (handles month boundaries).
-    const target = new Date(today);
-    target.setDate(target.getDate() - dayOffset);
-    const targetMonth = monthKey(target);
-    const targetDay = target.getDate();
-    const targetKey = cellKey(targetMonth, targetDay);
-    const targetMonthLabel = target.toLocaleString("en-US", { month: "long" });
-    const targetYear = target.getFullYear();
-    const dayWord = dayOffset === 0 ? "Today's" : "Yesterday's";
-    const rows: string[] = [];
-    let total = 0;
-    let doneCount = 0;
-
-    const [doneMark, missMark] = COPY_STATUS_STYLES[styleIndex];
-    // Random generic header emoji (habit-tracking vibe, not score-related).
-    const HEADER_EMOJIS = ["📊", "📋", "🗓️", "📌"];
-    const headerEmoji = HEADER_EMOJIS[Math.floor(Math.random() * HEADER_EMOJIS.length)];
-
-    for (const section of state.sections) {
-      if (section.habits.length === 0 || section.collapsed) continue;
-      rows.push(`**${section.name.toUpperCase()}**`);
-      for (const habit of section.habits) {
-        const done = (state.completions[habit.id] ?? []).includes(targetKey);
-        total += 1;
-        if (done) doneCount += 1;
-        rows.push(`${done ? doneMark : missMark} ${habit.name}`);
-      }
-      rows.push("");
-    }
-
-    const pct = total === 0 ? 0 : doneCount / total;
-    const pctNum = Math.round(pct * 100);
-    const tagline =
-      total > 0 && doneCount === total
-        ? "🔥 100% done — flawless! Absolutely unstoppable! 🔥"
-        : pct >= 0.8
-          ? `⚡ ${pctNum}% done — so close to perfect, finish strong! 💪`
-          : pct >= 0.5
-            ? `💪 ${pctNum}% done — past halfway, keep the streak alive! 🔥`
-            : doneCount > 0
-              ? `🌱 ${pctNum}% done — every tick counts, momentum is building! 🌟`
-              : "☕ 0% done — blank slate, tomorrow we attack! ✨";
-
-    const lines: string[] = [
-      `${headerEmoji} ${dayWord} Habit Check-in — ${targetMonthLabel} ${targetDay}, ${targetYear}`,
-      `${tagline}\n`,
-      ...rows,
-      `—`,
-      `${doneCount}/${total} done ${dayOffset === 0 ? "today" : "yesterday"}`,
-      `Generated by https://habitsgrid.pro`,
-    ];
-
-    return lines.join("\n").trim();
-  };
-
   const handleCopyText = async (dayOffset: 0 | 1 = 0) => {
     // Random status-mark style per copy so shares feel fresh.
     // A saved picker choice overrides the shuffle.
-    const styleIndex =
-      copyStyle === "shuffle"
-        ? Math.floor(Math.random() * COPY_STATUS_STYLES.length)
-        : copyStyle;
-    await navigator.clipboard.writeText(buildShareText(dayOffset, styleIndex));
+    const styleIndex = copyStyle === "shuffle" ? randomCopyStyle() : copyStyle;
+    await navigator.clipboard.writeText(
+      buildShareText(h.sections, h.completions, today, dayOffset, styleIndex),
+    );
     toast.success(dayOffset === 0 ? "Today copied to clipboard!" : "Yesterday copied to clipboard!");
   };
 
-
-
-  const allHabits = state.sections.flatMap((s) => s.habits);
+  const allHabits = h.sections.flatMap((s) => s.habits);
   const doneToday = isCurrentMonth
-    ? allHabits.filter((h) =>
-      (state.completions[h.id] ?? []).includes(cellKey(month, today.getDate())),
-    ).length
+    ? allHabits.filter((habit) =>
+        (h.completions[habit.id] ?? []).includes(cellKey(month, today.getDate())),
+      ).length
     : 0;
 
-  const activeSection = activeId ? state.sections.find((s) => s.id === activeId) : null;
+  const activeSection = activeId ? h.sections.find((s) => s.id === activeId) : null;
   const activeHabit = activeId
-    ? state.sections.flatMap((s) => s.habits).find((h) => h.id === activeId) ?? null
+    ? h.sections.flatMap((s) => s.habits).find((h) => h.id === activeId) ?? null
     : null;
 
   return (
@@ -767,9 +439,8 @@ function Index() {
               setCursor(new Date(today.getFullYear(), today.getMonth(), 1));
               setDayOffset(0);
             }}
-            onShareToday={() => setSharePage(true)}
-            isTodayView={dayOffset === 0}
           />
+          <MobileTabBar />
           <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-8 max-md:portrait:py-0">
             <div className="mb-4 flex items-center justify-between max-md:portrait:hidden">
               <p className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground landscape:block md:block">
@@ -791,20 +462,9 @@ function Index() {
                   )}
                   {sharing ? "Exporting..." : "Capture"}
                 </button>
-                <button
-                  onClick={() => setShareOpen((v) => !v)}
-                  aria-expanded={shareOpen}
-                  aria-label="Share options"
-                  className="inline-flex items-center rounded-md border border-border bg-surface px-2 py-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden landscape:hidden"
-                >
-                  <Share2 className="size-3" />
-                </button>
-                <span className={`inline-flex ${shareOpen ? "" : "max-md:portrait:hidden"}`}>
+                <span className="inline-flex">
                   <button
-                    onClick={() => {
-                      void handleCopyText(0);
-                      setShareOpen(false);
-                    }}
+                    onClick={() => void handleCopyText(0)}
                     disabled={allHabits.length === 0}
                     title={
                       copyStyle === "shuffle"
@@ -817,10 +477,7 @@ function Index() {
                     Today
                   </button>
                   <button
-                    onClick={() => {
-                      void handleCopyText(1);
-                      setShareOpen(false);
-                    }}
+                    onClick={() => void handleCopyText(1)}
                     disabled={allHabits.length === 0}
                     title="Copy yesterday's check-in"
                     className="inline-flex items-center rounded-md rounded-none -ml-px border border-border bg-surface px-2 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
@@ -909,10 +566,10 @@ function Index() {
                   </thead>
                   <tbody>
                     <SortableContext
-                      items={state.sections.map((s) => s.id)}
+                      items={h.sections.map((s) => s.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      {state.sections.map((section) => (
+                      {h.sections.map((section) => (
                         <SectionRows
                           key={section.id}
                           section={section}
@@ -920,14 +577,14 @@ function Index() {
                           month={month}
                           today={today}
                           isCurrentMonth={isCurrentMonth}
-                          completions={state.completions}
+                          completions={h.completions}
                           onToggle={toggle}
-                          onRemove={removeHabit}
-                          onRename={renameHabit}
-                          onRecolor={recolorHabit}
-                          onToggleSection={toggleSection}
-                          onRenameSection={renameSection}
-                          onRemoveSection={removeSection}
+                          onRemove={h.removeHabit}
+                          onRename={h.renameHabit}
+                          onRecolor={h.recolorHabit}
+                          onToggleSection={h.toggleSection}
+                          onRenameSection={h.renameSection}
+                          onRemoveSection={h.removeSection}
                           adding={adding === section.id}
                           draft={draft}
                           setDraft={setDraft}
@@ -936,11 +593,11 @@ function Index() {
                             setDraft("");
                           }}
                           onCancelAdd={() => setAdding(null)}
-                          onCommitAdd={() => addHabit(section.id)}
+                          onCommitAdd={() => commitDraftAdd(section.id)}
                         />
                       ))}
                     </SortableContext>
-                    <AddGroupRow onAdd={addSection} />
+                    <AddGroupRow onAdd={h.addSection} />
                   </tbody>
                 </table>
               </div>
@@ -967,7 +624,7 @@ function Index() {
                             </div>
                           </td>
                           {days.map((d) => {
-                            const filled = (state.completions[activeHabit.id] ?? []).includes(
+                            const filled = (h.completions[activeHabit.id] ?? []).includes(
                               cellKey(month, d),
                             );
                             const isToday = isCurrentMonth && d === today.getDate();
@@ -998,94 +655,6 @@ function Index() {
 
             {/* Phone portrait only: today's checklist (no month grid) */}
             <div className="landscape:hidden md:hidden">
-              {sharePage ? (
-                <div key="share" className="animate-day-switch flex flex-col gap-4 pb-4">
-                  <button
-                    onClick={() => setSharePage(false)}
-                    className="flex items-center gap-1 self-start rounded-lg px-2 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors active:bg-secondary"
-                  >
-                    <ChevronLeft className="size-4" />
-                    Checklist
-                  </button>
-                  <div>
-                    <h2 className="text-xl font-bold tracking-tight">Share your progress</h2>
-                    <p className="mt-0.5 text-[13px] text-muted-foreground">
-                      Pick a day, pick a style, then copy or send it anywhere.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-1 rounded-xl border border-border bg-surface p-1">
-                    {([0, 1] as const).map((d) => (
-                      <button
-                        key={d}
-                        onClick={() => setShareDay(d)}
-                        aria-pressed={shareDay === d}
-                        className={`rounded-lg py-2 font-mono text-[11px] uppercase tracking-[0.15em] transition-colors ${shareDay === d ? "bg-foreground text-background" : "text-muted-foreground"}`}
-                      >
-                        {d === 0 ? "Today" : "Yesterday"}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={() => void handleCopyText(shareDay)}
-                      disabled={allHabits.length === 0}
-                      className="flex items-center justify-center gap-2 rounded-xl bg-foreground py-2 text-[15px] font-semibold text-background transition-all active:scale-[0.98] disabled:opacity-40"
-                    >
-                      <Clipboard className="size-4" />
-                      Copy {shareDay === 0 ? "today" : "yesterday"}&apos;s check-in
-                    </button>
-                  </div>
-
-                  <div className="rounded-xl border border-border bg-surface p-4 shadow-sm">
-                    <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                      Preview
-                    </p>
-                    <p className="whitespace-pre-wrap text-[13px] leading-relaxed">
-                      {allHabits.length === 0
-                        ? "Nothing to share yet — add a habit first."
-                        : buildShareText(shareDay, previewStyle)}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                      Mark style
-                    </p>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      <button
-                        onClick={() => setCopyStyle("shuffle")}
-                        aria-pressed={copyStyle === "shuffle"}
-                        className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-[13px] transition-all active:scale-95 ${copyStyle === "shuffle" ? "border-foreground bg-foreground/[0.06]" : "border-border/60 bg-surface"}`}
-                      >
-                        <Shuffle className="size-3.5 text-muted-foreground" />
-                        <span>🔀 Shuffle</span>
-                        {copyStyle === "shuffle" && <Check className="ml-auto size-4" />}
-                      </button>
-                      {COPY_STATUS_STYLES.map(([doneMark, missMark, label], i) => (
-                        <button
-                          key={label}
-                          onClick={() => setCopyStyle(i)}
-                          aria-pressed={copyStyle === i}
-                          className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-[13px] transition-all active:scale-95 ${copyStyle === i ? "border-foreground bg-foreground/[0.06]" : "border-border/60 bg-surface"}`}
-                        >
-                          <span>
-                            {doneMark}
-                            {missMark}
-                          </span>
-                          <span>{label}</span>
-                          {copyStyle === i && <Check className="ml-auto size-4" />}
-                        </button>
-                      ))}
-                    </div>
-                    <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                      Want the grid image? Rotate for Capture
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <>
               {allHabits.length > 0 && (
                 <div className="sticky top-0 z-10 -mx-4 mb-4 border-b border-foreground/10 bg-background/90 bg-gradient-to-b from-foreground/[0.06] to-transparent px-4 pb-3 pt-2 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.3)] backdrop-blur-md">
                   <div className="mb-2 flex items-center justify-between px-1">
@@ -1113,7 +682,7 @@ function Index() {
                       d.setDate(d.getDate() - (6 - i));
                       const key = cellKey(monthKey(d), d.getDate());
                       const done = allHabits.filter((h) =>
-                        (state.completions[h.id] ?? []).includes(key),
+                        (h.completions[h.id] ?? []).includes(key),
                       ).length;
                       const total = allHabits.length;
                       const pct = total === 0 ? 0 : Math.round((done / total) * 100);
@@ -1184,9 +753,9 @@ function Index() {
                 </div>
               ) : (
                 <div key={selectedKey} className="animate-day-switch flex flex-col gap-4">
-                  {state.sections.map((section) => {
+                  {h.sections.map((section) => {
                     const sectionDone = section.habits.filter((h) =>
-                      (state.completions[h.id] ?? []).includes(selectedKey),
+                      (h.completions[h.id] ?? []).includes(selectedKey),
                     ).length;
                     return (
                       <section
@@ -1195,7 +764,7 @@ function Index() {
                       >
                         <header className="flex items-center gap-1 border-b border-grid-line bg-secondary px-3 py-2">
                           <button
-                            onClick={() => toggleSection(section.id)}
+                            onClick={() => h.toggleSection(section.id)}
                             className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
                             aria-label={section.collapsed ? `Expand ${section.name}` : `Collapse ${section.name}`}
                           >
@@ -1215,7 +784,7 @@ function Index() {
                         {!section.collapsed && (
                           <ul className="divide-y divide-grid-line">
                             {section.habits.map((habit) => {
-                              const done = (state.completions[habit.id] ?? []).includes(selectedKey);
+                              const done = (h.completions[habit.id] ?? []).includes(selectedKey);
                               return (
                                 <li key={habit.id}>
                                   <button
@@ -1248,7 +817,7 @@ function Index() {
                                         const d = new Date(today);
                                         d.setDate(d.getDate() - (4 - i));
                                         const key = cellKey(monthKey(d), d.getDate());
-                                        const hit = (state.completions[habit.id] ?? []).includes(
+                                        const hit = (h.completions[habit.id] ?? []).includes(
                                           key,
                                         );
                                         const isTodayDot = i === 4;
@@ -1280,9 +849,9 @@ function Index() {
                                 autoFocus
                                 value={draft}
                                 onChange={(e) => setDraft(e.target.value)}
-                                onBlur={() => addHabit(section.id)}
+                                onBlur={() => commitDraftAdd(section.id)}
                                 onKeyDown={(e) => {
-                                  if (e.key === "Enter") addHabit(section.id);
+                                  if (e.key === "Enter") commitDraftAdd(section.id);
                                   if (e.key === "Escape") {
                                     setAdding(null);
                                     setDraft("");
@@ -1311,13 +880,11 @@ function Index() {
               )}
 
               <div className="mt-4">
-                <MobileAddGroupRow onAdd={addSection} />
+                <MobileAddGroupRow onAdd={h.addSection} />
               </div>
               <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                 Tap to tick · Today only
               </p>
-                </>
-              )}
             </div>
 
             {!isPro && (

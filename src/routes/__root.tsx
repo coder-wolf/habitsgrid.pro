@@ -13,6 +13,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth";
+import { HabitsProvider } from "@/lib/habits-store";
 import { ThemeProvider } from "@/lib/theme";
 
 function NotFoundComponent() {
@@ -157,8 +158,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
+          <HabitsProvider>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </HabitsProvider>
         </AuthProvider>
       </ThemeProvider>
       <Toaster position="bottom-right" />

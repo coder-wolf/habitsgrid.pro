@@ -10,7 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as ShareRouteImport } from './routes/share'
+import { Route as ThemesRouteImport } from './routes/themes'
 import { Route as SettingsBillingRouteImport } from './routes/settings/billing'
 import { Route as ApiWebhooksLemonsqueezyRouteImport } from './routes/api/webhooks/lemonsqueezy'
 
@@ -19,9 +22,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShareRoute = ShareRouteImport.update({
+  id: '/share',
+  path: '/share',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ThemesRoute = ThemesRouteImport.update({
+  id: '/themes',
+  path: '/themes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsBillingRoute = SettingsBillingRouteImport.update({
@@ -37,40 +55,68 @@ const ApiWebhooksLemonsqueezyRoute = ApiWebhooksLemonsqueezyRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/onboarding': typeof OnboardingRoute
+  '/share': typeof ShareRoute
+  '/themes': typeof ThemesRoute
   '/settings/billing': typeof SettingsBillingRoute
   '/api/webhooks/lemonsqueezy': typeof ApiWebhooksLemonsqueezyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/onboarding': typeof OnboardingRoute
+  '/share': typeof ShareRoute
+  '/themes': typeof ThemesRoute
   '/settings/billing': typeof SettingsBillingRoute
   '/api/webhooks/lemonsqueezy': typeof ApiWebhooksLemonsqueezyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/onboarding': typeof OnboardingRoute
+  '/share': typeof ShareRoute
+  '/themes': typeof ThemesRoute
   '/settings/billing': typeof SettingsBillingRoute
   '/api/webhooks/lemonsqueezy': typeof ApiWebhooksLemonsqueezyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/onboarding' | '/settings/billing' | '/api/webhooks/lemonsqueezy'
+    | '/'
+    | '/account'
+    | '/onboarding'
+    | '/share'
+    | '/themes'
+    | '/settings/billing'
+    | '/api/webhooks/lemonsqueezy'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/onboarding' | '/settings/billing' | '/api/webhooks/lemonsqueezy'
+  to:
+    | '/'
+    | '/account'
+    | '/onboarding'
+    | '/share'
+    | '/themes'
+    | '/settings/billing'
+    | '/api/webhooks/lemonsqueezy'
   id:
     | '__root__'
     | '/'
+    | '/account'
     | '/onboarding'
+    | '/share'
+    | '/themes'
     | '/settings/billing'
     | '/api/webhooks/lemonsqueezy'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   OnboardingRoute: typeof OnboardingRoute
+  ShareRoute: typeof ShareRoute
+  ThemesRoute: typeof ThemesRoute
   SettingsBillingRoute: typeof SettingsBillingRoute
   ApiWebhooksLemonsqueezyRoute: typeof ApiWebhooksLemonsqueezyRoute
 }
@@ -84,11 +130,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/share': {
+      id: '/share'
+      path: '/share'
+      fullPath: '/share'
+      preLoaderRoute: typeof ShareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/themes': {
+      id: '/themes'
+      path: '/themes'
+      fullPath: '/themes'
+      preLoaderRoute: typeof ThemesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings/billing': {
@@ -110,7 +177,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   OnboardingRoute: OnboardingRoute,
+  ShareRoute: ShareRoute,
+  ThemesRoute: ThemesRoute,
   SettingsBillingRoute: SettingsBillingRoute,
   ApiWebhooksLemonsqueezyRoute: ApiWebhooksLemonsqueezyRoute,
 }

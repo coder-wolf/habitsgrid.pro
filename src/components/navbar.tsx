@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { CalendarCheck, ChevronLeft, ChevronRight, Crown, Share2, User, Zap } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { ThemeSwitcher } from "@/components/theme-switcher";
@@ -14,8 +14,6 @@ type NavbarProps = {
   doneToday: number;
   onShiftMonth: (delta: number) => void;
   onToday: () => void;
-  onShareToday: () => void;
-  isTodayView: boolean;
 };
 
 export function Navbar({
@@ -26,8 +24,6 @@ export function Navbar({
   doneToday,
   onShiftMonth,
   onToday,
-  onShareToday,
-  isTodayView,
 }: NavbarProps) {
   const { user, isPro, signInWithGoogle, signOut } = useAuth();
   const navigate = useNavigate();
@@ -36,12 +32,9 @@ export function Navbar({
   const monthLabel = cursor.toLocaleString("en-US", { month: "long" });
   const yearLabel = cursor.getFullYear();
 
-  const tab =
-    "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 font-mono text-[9px] uppercase tracking-wider transition-colors active:bg-secondary";
-
   return (
-    <nav className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-md max-md:portrait:fixed max-md:portrait:bottom-4 max-md:portrait:left-4 max-md:portrait:right-4 max-md:portrait:top-auto max-md:portrait:rounded-[28px] max-md:portrait:border max-md:portrait:border-foreground/10 max-md:portrait:bg-secondary/85 max-md:portrait:bg-gradient-to-b max-md:portrait:from-white/10 max-md:portrait:to-transparent max-md:portrait:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.35)] max-md:portrait:backdrop-blur-xl max-md:portrait:[padding-bottom:env(safe-area-inset-bottom)]">
-      <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4 max-md:portrait:hidden sm:px-8">
+    <nav className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-md max-md:portrait:hidden">
+      <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4 sm:px-8">
         {/* Left: Logo + Title */}
         <Link to="/" className="flex items-center gap-2.5">
           <span className="text-lg font-bold tracking-tight text-foreground">Habits Grid</span>
@@ -198,116 +191,12 @@ export function Navbar({
                   fill="#EA4335"
                 />
               </svg>
-              <span className="max-md:landscape:hidden">Sign in</span>
+              Sign in
             </button>
           )}
         </div>
       </div>
 
-      {/* Portrait phones: 5-tab bottom bar */}
-      <div className="hidden items-stretch gap-1 px-3 pb-1.5 pt-2 max-md:portrait:flex">
-        <button
-          onClick={onToday}
-          aria-label="Go to today"
-          className={`${tab} ${isTodayView ? "text-foreground" : "text-muted-foreground"}`}
-        >
-          <span
-            className={`flex h-8 w-14 items-center justify-center rounded-full transition-all active:scale-95 ${isTodayView ? "bg-primary/15 text-primary" : ""}`}
-          >
-            <CalendarCheck className="size-5" />
-          </span>
-          <span>Today</span>
-        </button>
-        <button
-          onClick={onShareToday}
-          disabled={habitCount === 0}
-          aria-label="Copy today's check-in"
-          className={`${tab} text-muted-foreground disabled:opacity-40`}
-        >
-          <Share2 className="size-5" />
-          <span>Share</span>
-        </button>
-        <div className={`${tab} text-muted-foreground`}>
-          <ThemeSwitcher />
-          <span>Theme</span>
-        </div>
-        {isPro ? (
-          <Link to="/settings/billing" className={`${tab} text-muted-foreground`}>
-            <Crown className="size-5" />
-            <span>Pro</span>
-          </Link>
-        ) : (
-          <button
-            onClick={() => navigate({ to: "/onboarding" })}
-            aria-label="Upgrade to Pro"
-            className={`${tab} text-muted-foreground`}
-          >
-            <Zap className="size-5" />
-            <span>Pro</span>
-          </button>
-        )}
-        {user ? (
-          <div className="relative flex min-w-0 flex-1">
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Account menu"
-              className={`${tab} w-full ${menuOpen ? "text-foreground" : "text-muted-foreground"}`}
-            >
-              <span
-                className={`flex h-8 w-14 items-center justify-center rounded-full transition-all active:scale-95 ${menuOpen ? "bg-primary/15 text-primary" : ""}`}
-              >
-                <span className="flex size-5 items-center justify-center rounded-full bg-primary/10">
-                  <span className="text-[10px] font-medium text-primary">
-                    {user.email.charAt(0).toUpperCase()}
-                  </span>
-                </span>
-              </span>
-              <span>Account</span>
-            </button>
-            {menuOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                <div className="absolute bottom-full left-1/2 z-50 mb-2 w-48 -translate-x-1/2 rounded-lg border border-border bg-surface py-1 shadow-md">
-                  <div className="border-b border-border px-3 py-2">
-                    <p className="truncate text-xs text-foreground">{user.email}</p>
-                    <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
-                      {isPro ? "Pro plan" : "Free plan"}
-                    </p>
-                  </div>
-                  <Link
-                    to="/settings/billing"
-                    onClick={() => setMenuOpen(false)}
-                    className="block px-3 py-2 text-sm text-foreground transition-colors hover:bg-secondary"
-                  >
-                    Billing
-                  </Link>
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      void signOut().then(() =>
-                        toast.success("Signed out — your habits are safely stored."),
-                      );
-                    }}
-                    className="w-full px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-secondary"
-                  >
-                    Sign out
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        ) : (
-          <button
-            onClick={() => void signInWithGoogle()}
-            disabled={!isSupabaseConfigured}
-            aria-label="Sign in"
-            className={`${tab} text-muted-foreground disabled:opacity-40`}
-          >
-            <User className="size-5" />
-            <span>Sign in</span>
-          </button>
-        )}
-      </div>
     </nav>
   );
 }
