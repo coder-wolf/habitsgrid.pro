@@ -36,7 +36,7 @@ export function MobileTabBar() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed bottom-4 left-4 right-4 z-30 hidden rounded-[28px] border border-foreground/15 bg-background/25 bg-gradient-to-b from-foreground/[0.06] to-foreground/[0.02] shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_16px_48px_-12px_rgba(0,0,0,0.35)] backdrop-blur-2xl backdrop-saturate-150 [padding-bottom:env(safe-area-inset-bottom)] max-md:portrait:block"
+      className="fixed bottom-4 left-4 right-4 z-30 hidden rounded-[28px] border border-foreground/10 bg-background/15 shadow-[inset_0_0.5px_0_rgba(255,255,255,0.3),0_16px_48px_-16px_rgba(0,0,0,0.25)] backdrop-blur-2xl backdrop-saturate-[1.8] [padding-bottom:env(safe-area-inset-bottom)] max-md:portrait:block"
     >
       <div className="flex items-stretch gap-1 px-3 pb-1.5 pt-2">
         <Link
