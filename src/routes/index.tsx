@@ -21,7 +21,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, ChevronRight, ChevronDown, Share2, Download, Clipboard, Shuffle, Check } from "lucide-react";
+import { GripVertical, ChevronRight, ChevronDown, Share2, Download, Clipboard, Shuffle, Check, RotateCw } from "lucide-react";
 import { toast } from "sonner";
 import { toPng } from "html-to-image";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -995,6 +995,11 @@ function Index() {
                   );
                 })()}
               </div>
+
+              <p className="mb-4 flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                <RotateCw className="size-3" />
+                Rotate to see the grid view
+              </p>
 
               {allHabits.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border bg-surface p-6 text-center">
