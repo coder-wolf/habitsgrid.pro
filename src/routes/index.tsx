@@ -927,7 +927,7 @@ function Index() {
                               <span
                                 className={`size-2 shrink-0 rounded-sm ${habitColorClass[activeHabit.color]}`}
                               />
-                              <span className="truncate text-[13px]">{activeHabit.name}</span>
+                              <span className="break-words text-[13px] line-clamp-2">{activeHabit.name}</span>
                             </div>
                           </td>
                           {days.map((d) => {
@@ -1564,7 +1564,7 @@ function SortableHabitRow({
           <InlineEdit
             value={habit.name}
             onCommit={(v) => onRename(sectionId, habit.id, v)}
-            className="truncate text-[13px]"
+            className="break-words text-[13px] line-clamp-2"
           />
           <Popover>
             <PopoverTrigger asChild>
