@@ -968,11 +968,20 @@ function Index() {
             {/* Phone portrait only: today's checklist (no month grid) */}
             <div className="landscape:hidden md:hidden">
               {allHabits.length > 0 && (
-                <div className="mb-4 rounded-lg border border-border bg-surface p-4 shadow-sm">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                    Last 7 days
-                  </p>
-                  <div className="mt-2 grid grid-cols-7 gap-1">
+                <div className="mb-4">
+                  <div className="mb-2 flex items-baseline justify-between px-1">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                      This week
+                    </p>
+                    <p className="font-mono text-[10px] text-muted-foreground">
+                      {selectedDay.toLocaleDateString("en-US", {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-7 gap-1.5">
                     {Array.from({ length: 7 }, (_, i) => {
                       const d = new Date(today);
                       d.setDate(d.getDate() - (6 - i));
@@ -981,9 +990,7 @@ function Index() {
                         (state.completions[h.id] ?? []).includes(key),
                       ).length;
                       const total = allHabits.length;
-                      const frac = total === 0 ? 0 : done / total;
-                      const r = 14;
-                      const c = 2 * Math.PI * r;
+                      const pct = total === 0 ? 0 : Math.round((done / total) * 100);
                       const isTodayDot = i === 6;
                       const isSelected = dayOffset === 6 - i;
                       return (
@@ -992,28 +999,28 @@ function Index() {
                           onClick={() => setDayOffset(6 - i)}
                           aria-pressed={isSelected}
                           aria-label={`${d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}: ${done} of ${total} done`}
-                          className={`flex flex-col items-center gap-1 rounded-lg p-1 transition-colors active:bg-secondary ${isSelected ? "bg-secondary" : ""}`}
+                          className={`flex flex-col items-center gap-1 rounded-2xl border py-2 transition-all active:scale-95 ${isTodayDot
+                            ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                            : isSelected
+                              ? "border-primary/60 bg-primary/10 text-foreground"
+                              : "border-border/60 bg-surface text-foreground"
+                            }`}
                         >
-                          <svg viewBox="0 0 36 36"
-                            className={`size-9 ${isTodayDot ? "rounded-full ring-2 ring-primary/60 ring-offset-2 ring-offset-surface" : ""}`} role="img"
-                            aria-hidden="true">
-                            <circle cx="18" cy="18" r={r} fill="none" strokeWidth="3.5"
-                              className="stroke-border" />
-                            <circle cx="18" cy="18" r={r} fill="none" strokeWidth="3.5"
-                              strokeLinecap="round"
-                              strokeDasharray={`${frac * c} ${c}`}
-                              transform="rotate(-90 18 18)"
-                              className={frac === 1 ? "stroke-primary" : "stroke-primary/70"} />
-                            <text x="18" y="18" textAnchor="middle" dominantBaseline="central"
-                              fontSize="11" fontWeight="700"
-                              className="fill-foreground">
-                              {d.getDate()}
-                            </text>
-                          </svg>
                           <span
-                            className={`font-mono text-[9px] uppercase ${isTodayDot ? "font-bold text-primary" : "text-muted-foreground"}`}
+                            className={`font-mono text-[9px] font-medium uppercase tracking-wider ${isTodayDot ? "text-primary-foreground/80" : "text-muted-foreground"}`}
                           >
                             {d.toLocaleDateString("en-US", { weekday: "narrow" })}
+                          </span>
+                          <span className="text-[15px] font-bold leading-none tabular-nums">
+                            {d.getDate()}
+                          </span>
+                          <span
+                            className={`h-1 w-7 overflow-hidden rounded-full ${isTodayDot ? "bg-primary-foreground/30" : "bg-secondary"}`}
+                          >
+                            <span
+                              className={`block h-full rounded-full ${isTodayDot ? "bg-primary-foreground" : "bg-primary"}`}
+                              style={{ width: `${pct}%` }}
+                            />
                           </span>
                         </button>
                       );
