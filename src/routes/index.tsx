@@ -1061,6 +1061,33 @@ function Index() {
                                     >
                                       {habit.name}
                                     </span>
+                                    <span
+                                      className="flex shrink-0 items-center gap-1"
+                                      aria-label="Last 7 days"
+                                    >
+                                      {Array.from({ length: 7 }, (_, i) => {
+                                        const d = new Date(today);
+                                        d.setDate(d.getDate() - (6 - i));
+                                        const key = cellKey(monthKey(d), d.getDate());
+                                        const hit = (state.completions[habit.id] ?? []).includes(
+                                          key,
+                                        );
+                                        const isTodayDot = i === 6;
+                                        return (
+                                          <span
+                                            key={key}
+                                            title={d.toLocaleDateString("en-US", {
+                                              month: "short",
+                                              day: "numeric",
+                                            })}
+                                            className={`size-2 rounded-full ${hit
+                                              ? habitColorClass[habit.color]
+                                              : "bg-border"
+                                              } ${isTodayDot ? "ring-1 ring-foreground/40 ring-offset-1 ring-offset-surface" : ""}`}
+                                          />
+                                        );
+                                      })}
+                                    </span>
                                   </button>
                                 </li>
                               );
