@@ -752,14 +752,7 @@ function Index() {
               <p className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground landscape:block md:block">
                 {monthLabel} {yearLabel}
               </p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground landscape:hidden md:hidden">
-                {today.toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </p>
-              <div className="flex items-center gap-1">
+              <div className="ml-auto flex items-center gap-1">
                 <span className="hidden font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground mr-1 sm:inline">
                   Share on socials →
                 </span>
