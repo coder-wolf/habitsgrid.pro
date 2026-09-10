@@ -40,7 +40,7 @@ export function Navbar({
     "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 font-mono text-[9px] uppercase tracking-wider transition-colors active:bg-secondary";
 
   return (
-    <nav className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-md max-md:portrait:fixed max-md:portrait:bottom-4 max-md:portrait:left-4 max-md:portrait:right-4 max-md:portrait:top-auto max-md:portrait:rounded-[28px] max-md:portrait:border max-md:portrait:border-white/20 max-md:portrait:bg-background/60 max-md:portrait:bg-gradient-to-b max-md:portrait:from-white/10 max-md:portrait:to-transparent max-md:portrait:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.35)] max-md:portrait:backdrop-blur-xl max-md:portrait:[padding-bottom:env(safe-area-inset-bottom)]">
+    <nav className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-md max-md:portrait:fixed max-md:portrait:bottom-4 max-md:portrait:left-4 max-md:portrait:right-4 max-md:portrait:top-auto max-md:portrait:rounded-[28px] max-md:portrait:border max-md:portrait:border-foreground/10 max-md:portrait:bg-secondary/85 max-md:portrait:bg-gradient-to-b max-md:portrait:from-white/10 max-md:portrait:to-transparent max-md:portrait:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.35)] max-md:portrait:backdrop-blur-xl max-md:portrait:[padding-bottom:env(safe-area-inset-bottom)]">
       <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4 max-md:portrait:hidden sm:px-8">
         {/* Left: Logo + Title */}
         <Link to="/" className="flex items-center gap-2.5">
@@ -212,7 +212,7 @@ export function Navbar({
           className={`${tab} ${isTodayView ? "text-foreground" : "text-muted-foreground"}`}
         >
           <span
-            className={`flex size-8 items-center justify-center rounded-full transition-all active:scale-95 ${isTodayView ? "bg-foreground text-background" : ""}`}
+            className={`flex h-8 w-14 items-center justify-center rounded-full transition-all active:scale-95 ${isTodayView ? "bg-primary/15 text-primary" : ""}`}
           >
             <CalendarCheck className="size-5" />
           </span>
@@ -224,22 +224,16 @@ export function Navbar({
           aria-label="Copy today's check-in"
           className={`${tab} text-muted-foreground disabled:opacity-40`}
         >
-          <span className="flex size-8 items-center justify-center rounded-full transition-all active:scale-95">
-            <Share2 className="size-5" />
-          </span>
+          <Share2 className="size-5" />
           <span>Share</span>
         </button>
         <div className={`${tab} text-muted-foreground`}>
-          <span className="flex size-8 items-center justify-center rounded-full transition-all active:scale-95">
-            <ThemeSwitcher />
-          </span>
+          <ThemeSwitcher />
           <span>Theme</span>
         </div>
         {isPro ? (
           <Link to="/settings/billing" className={`${tab} text-muted-foreground`}>
-            <span className="flex size-8 items-center justify-center rounded-full transition-all active:scale-95">
-              <Crown className="size-5" />
-            </span>
+            <Crown className="size-5" />
             <span>Pro</span>
           </Link>
         ) : (
@@ -248,9 +242,7 @@ export function Navbar({
             aria-label="Upgrade to Pro"
             className={`${tab} text-muted-foreground`}
           >
-            <span className="flex size-8 items-center justify-center rounded-full transition-all active:scale-95">
-              <Zap className="size-5" />
-            </span>
+            <Zap className="size-5" />
             <span>Pro</span>
           </button>
         )}
@@ -262,7 +254,7 @@ export function Navbar({
               className={`${tab} w-full ${menuOpen ? "text-foreground" : "text-muted-foreground"}`}
             >
               <span
-                className={`flex size-8 items-center justify-center rounded-full transition-all active:scale-95 ${menuOpen ? "bg-foreground text-background" : ""}`}
+                className={`flex h-8 w-14 items-center justify-center rounded-full transition-all active:scale-95 ${menuOpen ? "bg-primary/15 text-primary" : ""}`}
               >
                 <span className="flex size-5 items-center justify-center rounded-full bg-primary/10">
                   <span className="text-[10px] font-medium text-primary">
@@ -311,9 +303,7 @@ export function Navbar({
             aria-label="Sign in"
             className={`${tab} text-muted-foreground disabled:opacity-40`}
           >
-            <span className="flex size-8 items-center justify-center rounded-full transition-all active:scale-95">
-              <User className="size-5" />
-            </span>
+            <User className="size-5" />
             <span>Sign in</span>
           </button>
         )}
