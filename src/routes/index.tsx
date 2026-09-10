@@ -725,7 +725,7 @@ function Index() {
     : null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background font-sans text-foreground max-md:portrait:pb-20">
+    <div className="flex min-h-screen flex-col bg-background font-sans text-foreground max-md:portrait:pb-24">
       {/* SEO: crawlable H1 — app is client-rendered, so bots need static heading */}
       <h1 className="sr-only">
         HabitsGrid — Spreadsheet-Style Daily Habit Tracker
@@ -745,7 +745,12 @@ function Index() {
             habitCount={allHabits.length}
             doneToday={doneToday}
             onShiftMonth={shiftMonth}
-            onToday={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
+            onToday={() => {
+              setCursor(new Date(today.getFullYear(), today.getMonth(), 1));
+              setDayOffset(0);
+            }}
+            onShareToday={() => void handleCopyText(0)}
+            isTodayView={dayOffset === 0}
           />
           <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-8 max-md:portrait:py-0">
             <div className="mb-4 flex items-center justify-between max-md:portrait:hidden">
