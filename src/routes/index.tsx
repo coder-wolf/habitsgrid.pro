@@ -445,7 +445,7 @@ function Index() {
               setDayOffset(0);
             }}
           />
-          <MobileTabBar />
+          {!simpleHome && <MobileTabBar />}
           <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-8 max-md:portrait:py-0">
             <div className="mb-4 flex items-center justify-between max-md:portrait:hidden">
               <p className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground landscape:block md:block">
@@ -661,8 +661,8 @@ function Index() {
             {/* Phone portrait only: today's checklist (no month grid) */}
             <div className="landscape:hidden md:hidden">
               {simpleHome ? (
-                <div className="mb-4 px-1 pt-1">
-                  <p className="text-[17px] font-bold tracking-tight">
+                <div className="mb-4 px-1 pt-4">
+                  <p className="text-[22px] font-bold tracking-tight">
                     Today{" "}
                     <span className="font-normal text-muted-foreground">
                       {today.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
@@ -805,7 +805,6 @@ function Index() {
                                     >
                                       {habit.name}
                                     </span>
-                                    {!simpleHome && (
                                     <span
                                       className="flex shrink-0 items-center gap-1"
                                       aria-label="Last 5 days"
@@ -833,7 +832,6 @@ function Index() {
                                         );
                                       })}
                                     </span>
-                                    )}
                                   </button>
                                 </li>
                               );
