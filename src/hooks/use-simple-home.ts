@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 const KEY = "habitsgrid-simple-home";
 
 export function useSimpleHome() {
-  const [simple, setSimple] = useState(false);
+  // Simple is the default: only an explicit "0" opts into full mode.
+  const [simple, setSimple] = useState(true);
 
   useEffect(() => {
     try {
-      setSimple(localStorage.getItem(KEY) === "1");
+      setSimple(localStorage.getItem(KEY) !== "0");
     } catch {
       /* ignore */
     }
