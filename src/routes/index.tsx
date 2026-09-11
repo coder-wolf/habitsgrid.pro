@@ -710,6 +710,14 @@ function Index() {
                           <span className="text-[15px] font-bold leading-none tabular-nums">
                             {d.getDate()}
                           </span>
+                          <span
+                            className={`h-1 w-7 overflow-hidden rounded-full ${isTodayDot ? "bg-background/25" : "bg-foreground/10"}`}
+                          >
+                            <span
+                              className={`block h-full rounded-full ${isTodayDot ? "bg-background" : "bg-foreground/70"}`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </span>
                         </button>
                       );
                     })}
