@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { CalendarCheck, Crown, Share2, User } from "lucide-react";
+import { CalendarCheck, Crown, Palette, Share2, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { useHideOnScrollDown } from "@/hooks/use-hide-on-scroll";
@@ -27,7 +27,9 @@ export function MobileTabBar() {
       ? "today"
       : pathname === "/share"
         ? "share"
-        : pathname === "/account"
+        : pathname === "/themes"
+          ? "theme"
+          : pathname === "/account"
           ? "account"
           : pathname === "/onboarding" || pathname === "/settings/billing"
             ? "pro"
@@ -58,6 +60,16 @@ export function MobileTabBar() {
             <Share2 className="size-5" />
           </TabIcon>
           {active === "share" && <span>Share</span>}
+        </Link>
+        <Link
+          to="/themes"
+          aria-label="Theme"
+          className={`${tab} ${active === "theme" ? "text-foreground" : "text-foreground/70"}`}
+        >
+          <TabIcon on={active === "theme"}>
+            <Palette className="size-5" />
+          </TabIcon>
+          {active === "theme" && <span>Theme</span>}
         </Link>
         {isPro ? (
           <Link
