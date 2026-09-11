@@ -49,7 +49,7 @@ export function MobileTabBar() {
           <TabIcon on={active === "today"}>
             <CalendarCheck className="size-5" />
           </TabIcon>
-          {active === "today" && <span>Today</span>}
+          <span>Today</span>
         </Link>
         <Link
           to="/share"
@@ -59,7 +59,7 @@ export function MobileTabBar() {
           <TabIcon on={active === "share"}>
             <Share2 className="size-5" />
           </TabIcon>
-          {active === "share" && <span>Share</span>}
+          <span>Share</span>
         </Link>
         <Link
           to="/themes"
@@ -69,7 +69,7 @@ export function MobileTabBar() {
           <TabIcon on={active === "theme"}>
             <Palette className="size-5" />
           </TabIcon>
-          {active === "theme" && <span>Theme</span>}
+          <span>Theme</span>
         </Link>
         {isPro ? (
           <Link
@@ -80,7 +80,7 @@ export function MobileTabBar() {
             <TabIcon on={active === "pro"}>
               <Crown className="size-5" />
             </TabIcon>
-            {active === "pro" && <span>Pro</span>}
+            <span>Pro</span>
           </Link>
         ) : (
           <Link
@@ -91,7 +91,7 @@ export function MobileTabBar() {
             <TabIcon on={active === "pro"}>
               <Crown className="size-5" />
             </TabIcon>
-            {active === "pro" && <span>Pro</span>}
+            <span>Pro</span>
           </Link>
         )}
         <Link
@@ -110,7 +110,7 @@ export function MobileTabBar() {
               <User className="size-5" />
             )}
           </TabIcon>
-          {active === "account" && <span>Account</span>}
+          <span>Account</span>
         </Link>
       </div>
     </nav>
