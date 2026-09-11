@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { CalendarCheck, Crown, Palette, Share2, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
+import { useHideOnScrollDown } from "@/hooks/use-hide-on-scroll";
 
 const tab =
   "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 font-mono text-[9px] uppercase tracking-wider transition-colors active:bg-secondary";
@@ -19,6 +20,7 @@ function TabIcon({ on, children }: { on: boolean; children: ReactNode }) {
 export function MobileTabBar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, isPro } = useAuth();
+  const hidden = useHideOnScrollDown();
 
   const active =
     pathname === "/"
@@ -36,7 +38,7 @@ export function MobileTabBar() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed bottom-4 left-4 right-4 z-30 hidden rounded-[28px] border border-foreground/10 bg-background/[0.03] shadow-[inset_0_0.5px_0_rgba(255,255,255,0.3),0_16px_48px_-16px_rgba(0,0,0,0.25)] backdrop-blur-2xl backdrop-saturate-[1.8] [padding-bottom:env(safe-area-inset-bottom)] max-md:portrait:block"
+      className={`fixed bottom-4 left-4 right-4 z-30 hidden rounded-[28px] border border-foreground/10 bg-background/[0.03] shadow-[inset_0_0.5px_0_rgba(255,255,255,0.3),0_16px_48px_-16px_rgba(0,0,0,0.25)] backdrop-blur-2xl backdrop-saturate-[1.8] transition-all duration-300 [padding-bottom:env(safe-area-inset-bottom)] max-md:portrait:block ${hidden ? "translate-y-[150%] opacity-0" : ""}`}
     >
       <div className="flex items-stretch gap-1 px-3 pb-1.5 pt-2">
         <Link

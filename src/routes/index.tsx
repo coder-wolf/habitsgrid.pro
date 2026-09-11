@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Navbar } from "@/components/navbar";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
+import { useHideOnScrollDown } from "@/hooks/use-hide-on-scroll";
 import { useAuth } from "@/lib/auth";
 import { useHabits } from "@/lib/habits-store";
 import {
@@ -263,6 +264,7 @@ function Index() {
   // Mobile checklist targets the selected day (defaults to today).
   // Tapping a ring in the 7-day strip switches the checklist to that day.
   const [dayOffset, setDayOffset] = useState(0);
+  const hideBars = useHideOnScrollDown();
   const selectedDay = useMemo(() => {
     const d = new Date(today);
     d.setDate(d.getDate() - dayOffset);
@@ -655,7 +657,7 @@ function Index() {
 
             {/* Phone portrait only: today's checklist (no month grid) */}
             <div className="landscape:hidden md:hidden">
-                <div className="sticky top-0 z-10 -mx-4 mb-4 border-b border-foreground/10 bg-background/90 bg-gradient-to-b from-foreground/[0.06] to-transparent px-4 pb-3 pt-2 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.3)] backdrop-blur-md">
+                <div className={`sticky top-0 z-10 -mx-4 mb-4 border-b border-foreground/10 bg-background/90 bg-gradient-to-b from-foreground/[0.06] to-transparent px-4 pb-3 pt-2 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.3)] backdrop-blur-md transition-transform duration-300 ${hideBars ? "-translate-y-[110%]" : ""}`}>
                   <div className="mb-2 flex items-center justify-between px-1">
                     <p className="text-[17px] font-bold tracking-tight">
                       {selectedDay.toLocaleDateString("en-US", { month: "long" })}{" "}
