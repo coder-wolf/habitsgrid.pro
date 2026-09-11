@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { CalendarCheck, Crown, Palette, Share2, User } from "lucide-react";
+import { CalendarCheck, Crown, Share2, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { useHideOnScrollDown } from "@/hooks/use-hide-on-scroll";
@@ -27,18 +27,16 @@ export function MobileTabBar() {
       ? "today"
       : pathname === "/share"
         ? "share"
-        : pathname === "/themes"
-          ? "theme"
-          : pathname === "/account"
-            ? "account"
-            : pathname === "/onboarding" || pathname === "/settings/billing"
-              ? "pro"
-              : null;
+        : pathname === "/account"
+          ? "account"
+          : pathname === "/onboarding" || pathname === "/settings/billing"
+            ? "pro"
+            : null;
 
   return (
     <nav
       aria-label="Primary"
-      className={`fixed bottom-4 left-4 right-4 z-30 hidden rounded-[28px] border border-foreground/10 bg-background/[0.03] shadow-[inset_0_0.5px_0_rgba(255,255,255,0.3),0_16px_48px_-16px_rgba(0,0,0,0.25)] backdrop-blur-2xl backdrop-saturate-[1.8] transition-all duration-300 [padding-bottom:env(safe-area-inset-bottom)] max-md:portrait:block ${hidden ? "translate-y-[150%] opacity-0" : ""}`}
+      className={`fixed bottom-4 left-4 right-4 z-30 mx-auto hidden w-auto max-w-sm rounded-[28px] border border-foreground/10 bg-background/[0.03] shadow-[inset_0_0.5px_0_rgba(255,255,255,0.3),0_16px_48px_-16px_rgba(0,0,0,0.25)] backdrop-blur-2xl backdrop-saturate-[1.8] transition-all duration-300 [padding-bottom:env(safe-area-inset-bottom)] max-md:portrait:block ${hidden ? "translate-y-[150%] opacity-0" : ""}`}
     >
       <div className="flex items-stretch gap-1 px-3 pb-1.5 pt-2">
         <Link
@@ -49,7 +47,7 @@ export function MobileTabBar() {
           <TabIcon on={active === "today"}>
             <CalendarCheck className="size-5" />
           </TabIcon>
-          <span>Today</span>
+          {active === "today" && <span>Today</span>}
         </Link>
         <Link
           to="/share"
@@ -59,17 +57,7 @@ export function MobileTabBar() {
           <TabIcon on={active === "share"}>
             <Share2 className="size-5" />
           </TabIcon>
-          <span>Share</span>
-        </Link>
-        <Link
-          to="/themes"
-          aria-label="Theme"
-          className={`${tab} ${active === "theme" ? "text-foreground" : "text-foreground/70"}`}
-        >
-          <TabIcon on={active === "theme"}>
-            <Palette className="size-5" />
-          </TabIcon>
-          <span>Theme</span>
+          {active === "share" && <span>Share</span>}
         </Link>
         {isPro ? (
           <Link
@@ -80,7 +68,7 @@ export function MobileTabBar() {
             <TabIcon on={active === "pro"}>
               <Crown className="size-5" />
             </TabIcon>
-            <span>Pro</span>
+            {active === "pro" && <span>Pro</span>}
           </Link>
         ) : (
           <Link
@@ -91,7 +79,7 @@ export function MobileTabBar() {
             <TabIcon on={active === "pro"}>
               <Crown className="size-5" />
             </TabIcon>
-            <span>Pro</span>
+            {active === "pro" && <span>Pro</span>}
           </Link>
         )}
         <Link
@@ -110,7 +98,7 @@ export function MobileTabBar() {
               <User className="size-5" />
             )}
           </TabIcon>
-          <span>Account</span>
+          {active === "account" && <span>Account</span>}
         </Link>
       </div>
     </nav>
