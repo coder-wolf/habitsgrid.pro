@@ -657,9 +657,9 @@ function Index() {
 
             {/* Phone portrait only: today's checklist (no month grid) */}
             <div className="landscape:hidden md:hidden">
-                <div className={`sticky top-0 z-10 -mx-4 mb-4 border-b border-foreground/10 bg-background/90 bg-gradient-to-b from-foreground/[0.06] to-transparent px-4 pb-2 pt-2 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.3)] backdrop-blur-md transition-transform duration-300 ${hideBars ? "-translate-y-[110%]" : ""}`}>
-                  <div className="mb-1.5 flex items-center justify-between px-1">
-                    <p className="text-[15px] font-bold tracking-tight">
+                <div className={`sticky top-0 z-10 -mx-4 mb-4 border-b border-foreground/10 bg-background/90 bg-gradient-to-b from-foreground/[0.06] to-transparent px-4 pb-3 pt-2 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.3)] backdrop-blur-md transition-transform duration-300 ${hideBars ? "-translate-y-[110%]" : ""}`}>
+                  <div className="mb-2 flex items-center justify-between px-1">
+                    <p className="text-[17px] font-bold tracking-tight">
                       {selectedDay.toLocaleDateString("en-US", { month: "long" })}{" "}
                       <span className="font-normal text-muted-foreground">
                         {selectedDay.getFullYear()}
@@ -695,7 +695,7 @@ function Index() {
                           onClick={() => setDayOffset(dayOffset === 6 - i ? 0 : 6 - i)}
                           aria-pressed={isSelected}
                           aria-label={`${d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}: ${done} of ${total} done`}
-                          className={`flex flex-col items-center gap-0.5 rounded-2xl border py-1.5 transition-all active:scale-95 ${isTodayDot
+                          className={`flex flex-col items-center gap-1 rounded-2xl border py-2 transition-all active:scale-95 ${isTodayDot
                             ? "border-foreground bg-foreground text-background shadow-lg shadow-black/20"
                             : isSelected
                               ? "border-foreground/30 bg-foreground/[0.06] text-foreground"
@@ -707,7 +707,7 @@ function Index() {
                           >
                             {d.toLocaleDateString("en-US", { weekday: "narrow" })}
                           </span>
-                          <span className="text-[14px] font-bold leading-none tabular-nums">
+                          <span className="text-[15px] font-bold leading-none tabular-nums">
                             {d.getDate()}
                           </span>
                         </button>
