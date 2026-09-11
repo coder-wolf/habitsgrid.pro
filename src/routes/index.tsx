@@ -269,9 +269,10 @@ function Index() {
   const [simpleHome] = useSimpleHome();
   const selectedDay = useMemo(() => {
     const d = new Date(today);
-    d.setDate(d.getDate() - dayOffset);
+    // Simple mode is today-only: no past-day browsing.
+    if (!simpleHome) d.setDate(d.getDate() - dayOffset);
     return d;
-  }, [today, dayOffset]);
+  }, [today, dayOffset, simpleHome]);
   const selectedKey = cellKey(monthKey(selectedDay), selectedDay.getDate());
 
   const toggle = useCallback(
@@ -659,6 +660,16 @@ function Index() {
 
             {/* Phone portrait only: today's checklist (no month grid) */}
             <div className="landscape:hidden md:hidden">
+              {simpleHome ? (
+                <div className="mb-4 px-1 pt-1">
+                  <p className="text-[17px] font-bold tracking-tight">
+                    Today{" "}
+                    <span className="font-normal text-muted-foreground">
+                      {today.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                    </span>
+                  </p>
+                </div>
+              ) : (
                 <div className={`sticky top-0 z-10 -mx-4 mb-4 border-b border-foreground/10 bg-background/90 bg-gradient-to-b from-foreground/[0.06] to-transparent px-4 pb-3 pt-2 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.3)] backdrop-blur-md transition-transform duration-300 ${hideBars ? "-translate-y-[110%]" : ""}`}>
                   <div className="mb-2 flex items-center justify-between px-1">
                     <p className="text-[17px] font-bold tracking-tight">
@@ -727,6 +738,7 @@ function Index() {
                     })}
                   </div>
                 </div>
+              )}
 
               {h.sections.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border bg-surface p-6 text-center">
@@ -750,22 +762,24 @@ function Index() {
                         className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm"
                       >
                         <header className="flex items-center gap-1 border-b border-grid-line bg-secondary px-3 py-2">
-                          <button
-                            onClick={() => h.toggleSection(section.id)}
-                            className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-                            aria-label={section.collapsed ? `Expand ${section.name}` : `Collapse ${section.name}`}
-                          >
-                            {section.collapsed ? (
-                              <ChevronRight className="size-4" />
-                            ) : (
-                              <ChevronDown className="size-4" />
-                            )}
-                          </button>
+                          {!simpleHome && (
+                            <button
+                              onClick={() => h.toggleSection(section.id)}
+                              className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+                              aria-label={section.collapsed ? `Expand ${section.name}` : `Collapse ${section.name}`}
+                            >
+                              {section.collapsed ? (
+                                <ChevronRight className="size-3.5" />
+                              ) : (
+                                <ChevronDown className="size-3.5" />
+                              )}
+                            </button>
+                          )}
                           <h2 className="flex-1 truncate font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                             {section.name}
                           </h2>
                         </header>
-                        {!section.collapsed && (
+                        {(!section.collapsed || simpleHome) && (
                           <ul className="divide-y divide-grid-line">
                             {section.habits.map((habit) => {
                               const done = (h.completions[habit.id] ?? []).includes(selectedKey);
@@ -826,7 +840,7 @@ function Index() {
                             })}
                           </ul>
                         )}
-                        {!section.collapsed && (
+                        {(!section.collapsed || simpleHome) && (
                           <div className="border-t border-grid-line px-3 py-2">
                             {adding === section.id ? (
                               <input
@@ -867,9 +881,11 @@ function Index() {
               <div className="mt-4">
                 <MobileAddGroupRow onAdd={h.addSection} />
               </div>
-              <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
-                Tap to tick · Rotate for grid
-              </p>
+              {!simpleHome && (
+                <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+                  Tap to tick · Rotate for grid
+                </p>
+              )}
             </div>
 
             {!isPro && (
