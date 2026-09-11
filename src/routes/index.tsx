@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -266,7 +266,7 @@ function Index() {
   // Tapping a ring in the 7-day strip switches the checklist to that day.
   const [dayOffset, setDayOffset] = useState(0);
   const hideBars = useHideOnScrollDown();
-  const [simpleHome] = useSimpleHome();
+  const [simpleHome, setSimpleHome] = useSimpleHome();
   const selectedDay = useMemo(() => {
     const d = new Date(today);
     // Simple mode is today-only: no past-day browsing.
@@ -883,6 +883,22 @@ function Index() {
                 <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
                   Tap to tick · Rotate for grid
                 </p>
+              )}
+              {simpleHome && (
+                <div className="mt-6 flex items-center justify-center gap-2 pb-4">
+                  <button
+                    onClick={() => setSimpleHome(false)}
+                    className="rounded-full border border-border bg-surface px-4 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground transition-colors active:bg-secondary"
+                  >
+                    Full mode
+                  </button>
+                  <Link
+                    to="/account"
+                    className="rounded-full border border-border bg-surface px-4 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground transition-colors active:bg-secondary"
+                  >
+                    Settings
+                  </Link>
+                </div>
               )}
             </div>
 
