@@ -35,6 +35,7 @@ import {
 import { Navbar } from "@/components/navbar";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { useHideOnScrollDown } from "@/hooks/use-hide-on-scroll";
+import { useSimpleHome } from "@/hooks/use-simple-home";
 import { useAuth } from "@/lib/auth";
 import { useHabits } from "@/lib/habits-store";
 import {
@@ -265,6 +266,7 @@ function Index() {
   // Tapping a ring in the 7-day strip switches the checklist to that day.
   const [dayOffset, setDayOffset] = useState(0);
   const hideBars = useHideOnScrollDown();
+  const [simpleHome] = useSimpleHome();
   const selectedDay = useMemo(() => {
     const d = new Date(today);
     d.setDate(d.getDate() - dayOffset);
@@ -710,14 +712,16 @@ function Index() {
                           <span className="text-[15px] font-bold leading-none tabular-nums">
                             {d.getDate()}
                           </span>
-                          <span
-                            className={`h-1 w-7 overflow-hidden rounded-full ${isTodayDot ? "bg-background/25" : "bg-foreground/10"}`}
-                          >
+                          {!simpleHome && (
                             <span
-                              className={`block h-full rounded-full ${isTodayDot ? "bg-background" : "bg-foreground/70"}`}
-                              style={{ width: `${pct}%` }}
-                            />
-                          </span>
+                              className={`h-1 w-7 overflow-hidden rounded-full ${isTodayDot ? "bg-background/25" : "bg-foreground/10"}`}
+                            >
+                              <span
+                                className={`block h-full rounded-full ${isTodayDot ? "bg-background" : "bg-foreground/70"}`}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </span>
+                          )}
                         </button>
                       );
                     })}
@@ -787,6 +791,7 @@ function Index() {
                                     >
                                       {habit.name}
                                     </span>
+                                    {!simpleHome && (
                                     <span
                                       className="flex shrink-0 items-center gap-1"
                                       aria-label="Last 5 days"
@@ -814,6 +819,7 @@ function Index() {
                                         );
                                       })}
                                     </span>
+                                    )}
                                   </button>
                                 </li>
                               );

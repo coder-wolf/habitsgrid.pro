@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { TabPage } from "@/components/tab-page";
 import { useAuth } from "@/lib/auth";
 import { THEMES, useTheme } from "@/lib/theme";
+import { useSimpleHome } from "@/hooks/use-simple-home";
 import { isSupabaseConfigured } from "@/lib/supabase";
 
 const THEME_SWATCHES: Record<string, { bg: string; primary: string }> = {
@@ -66,6 +67,39 @@ function ThemeSection() {
   );
 }
 
+function HomepageSection() {
+  const [simple, setSimple] = useSimpleHome();
+  return (
+    <div>
+      <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+        Homepage style
+      </p>
+      <div className="grid grid-cols-2 gap-1 rounded-xl border border-border bg-surface p-1">
+        {(
+          [
+            { value: false, label: "Full" },
+            { value: true, label: "Simple" },
+          ] as const
+        ).map((o) => (
+          <button
+            key={o.label}
+            onClick={() => setSimple(o.value)}
+            aria-pressed={simple === o.value}
+            className={`rounded-lg py-2 font-mono text-[11px] uppercase tracking-[0.15em] transition-colors ${simple === o.value ? "bg-foreground text-background" : "text-muted-foreground"}`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+      <p className="mt-1.5 text-[13px] text-muted-foreground">
+        {simple
+          ? "Simple hides history dots and extras — just the checklist."
+          : "Full shows history dots, progress minis and all extras."}
+      </p>
+    </div>
+  );
+}
+
 function AccountPage() {
   const { user, isPro, signInWithGoogle, signOut } = useAuth();
   const navigate = useNavigate();
@@ -73,18 +107,23 @@ function AccountPage() {
   if (!user) {
     return (
       <TabPage title="Account" subtitle="Sign in to sync your habits across devices.">
-        <button
-          onClick={() => void signInWithGoogle()}
-          disabled={!isSupabaseConfigured}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-foreground py-3 text-[15px] font-semibold text-background transition-all active:scale-[0.98] disabled:opacity-40"
-        >
-          Sign in with Google
-        </button>
-        {!isSupabaseConfigured && (
-          <p className="mt-2 text-center text-[13px] text-muted-foreground">
-            Cloud sync is not configured.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          <div>
+            <button
+              onClick={() => void signInWithGoogle()}
+              disabled={!isSupabaseConfigured}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-foreground py-3 text-[15px] font-semibold text-background transition-all active:scale-[0.98] disabled:opacity-40"
+            >
+              Sign in with Google
+            </button>
+            {!isSupabaseConfigured && (
+              <p className="mt-2 text-center text-[13px] text-muted-foreground">
+                Cloud sync is not configured.
+              </p>
+            )}
+          </div>
+          <HomepageSection />
+        </div>
       </TabPage>
     );
   }
@@ -141,6 +180,8 @@ function AccountPage() {
         >
           Sign out
         </button>
+
+        <HomepageSection />
 
         <ThemeSection />
       </div>
