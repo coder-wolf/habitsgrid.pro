@@ -762,24 +762,22 @@ function Index() {
                         className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm"
                       >
                         <header className="flex items-center gap-1 border-b border-grid-line bg-secondary px-3 py-2">
-                          {!simpleHome && (
-                            <button
-                              onClick={() => h.toggleSection(section.id)}
-                              className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
-                              aria-label={section.collapsed ? `Expand ${section.name}` : `Collapse ${section.name}`}
-                            >
-                              {section.collapsed ? (
-                                <ChevronRight className="size-3.5" />
-                              ) : (
-                                <ChevronDown className="size-3.5" />
-                              )}
-                            </button>
-                          )}
+                          <button
+                            onClick={() => h.toggleSection(section.id)}
+                            className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+                            aria-label={section.collapsed ? `Expand ${section.name}` : `Collapse ${section.name}`}
+                          >
+                            {section.collapsed ? (
+                              <ChevronRight className="size-3.5" />
+                            ) : (
+                              <ChevronDown className="size-3.5" />
+                            )}
+                          </button>
                           <h2 className="flex-1 truncate font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                             {section.name}
                           </h2>
                         </header>
-                        {(!section.collapsed || simpleHome) && (
+                        {!section.collapsed && (
                           <ul className="divide-y divide-grid-line">
                             {section.habits.map((habit) => {
                               const done = (h.completions[habit.id] ?? []).includes(selectedKey);
@@ -838,7 +836,7 @@ function Index() {
                             })}
                           </ul>
                         )}
-                        {(!section.collapsed || simpleHome) && (
+                        {!section.collapsed && (
                           <div className="border-t border-grid-line px-3 py-2">
                             {adding === section.id ? (
                               <input
