@@ -20,7 +20,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, ChevronRight, ChevronDown, Share2, Download, Clipboard, Shuffle, Check, RotateCw } from "lucide-react";
+import { GripVertical, ChevronRight, ChevronDown, Share2, Download, Clipboard, Shuffle, Check } from "lucide-react";
 import { toast } from "sonner";
 import { toPng } from "html-to-image";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -657,9 +657,9 @@ function Index() {
 
             {/* Phone portrait only: today's checklist (no month grid) */}
             <div className="landscape:hidden md:hidden">
-                <div className={`sticky top-0 z-10 -mx-4 mb-4 border-b border-foreground/10 bg-background/90 bg-gradient-to-b from-foreground/[0.06] to-transparent px-4 pb-3 pt-2 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.3)] backdrop-blur-md transition-transform duration-300 ${hideBars ? "-translate-y-[110%]" : ""}`}>
-                  <div className="mb-2 flex items-center justify-between px-1">
-                    <p className="text-[17px] font-bold tracking-tight">
+                <div className={`sticky top-0 z-10 -mx-4 mb-4 border-b border-foreground/10 bg-background/90 bg-gradient-to-b from-foreground/[0.06] to-transparent px-4 pb-2 pt-2 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.3)] backdrop-blur-md transition-transform duration-300 ${hideBars ? "-translate-y-[110%]" : ""}`}>
+                  <div className="mb-1.5 flex items-center justify-between px-1">
+                    <p className="text-[15px] font-bold tracking-tight">
                       {selectedDay.toLocaleDateString("en-US", { month: "long" })}{" "}
                       <span className="font-normal text-muted-foreground">
                         {selectedDay.getFullYear()}
@@ -692,10 +692,10 @@ function Index() {
                       return (
                         <button
                           key={key}
-                          onClick={() => setDayOffset(6 - i)}
+                          onClick={() => setDayOffset(dayOffset === 6 - i ? 0 : 6 - i)}
                           aria-pressed={isSelected}
                           aria-label={`${d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}: ${done} of ${total} done`}
-                          className={`flex flex-col items-center gap-1 rounded-2xl border py-2 transition-all active:scale-95 ${isTodayDot
+                          className={`flex flex-col items-center gap-0.5 rounded-2xl border py-1.5 transition-all active:scale-95 ${isTodayDot
                             ? "border-foreground bg-foreground text-background shadow-lg shadow-black/20"
                             : isSelected
                               ? "border-foreground/30 bg-foreground/[0.06] text-foreground"
@@ -707,42 +707,14 @@ function Index() {
                           >
                             {d.toLocaleDateString("en-US", { weekday: "narrow" })}
                           </span>
-                          <span className="text-[15px] font-bold leading-none tabular-nums">
+                          <span className="text-[14px] font-bold leading-none tabular-nums">
                             {d.getDate()}
-                          </span>
-                          <span
-                            className={`h-1 w-7 overflow-hidden rounded-full ${isTodayDot ? "bg-background/25" : "bg-foreground/10"}`}
-                          >
-                            <span
-                              className={`block h-full rounded-full ${isTodayDot ? "bg-background" : "bg-foreground/70"}`}
-                              style={{ width: `${pct}%` }}
-                            />
                           </span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
-
-              <p className="mb-4 flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                <RotateCw className="size-3" />
-                Rotate to see the grid view
-              </p>
-
-              {dayOffset > 0 && (
-                <button
-                  onClick={() => setDayOffset(0)}
-                  className="mb-3 w-full rounded-lg border border-border bg-surface px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground transition-colors active:bg-secondary"
-                >
-                  Viewing{" "}
-                  {selectedDay.toLocaleDateString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}{" "}
-                  · Back to today
-                </button>
-              )}
 
               {h.sections.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border bg-surface p-6 text-center">
@@ -760,9 +732,6 @@ function Index() {
                 )}
                 <div key={selectedKey} className="animate-day-switch flex flex-col gap-4">
                   {h.sections.map((section) => {
-                    const sectionDone = section.habits.filter(
-                      (habit) => (h.completions[habit.id] ?? []).includes(selectedKey),
-                    ).length;
                     return (
                       <section
                         key={section.id}
@@ -783,9 +752,6 @@ function Index() {
                           <h2 className="flex-1 truncate font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                             {section.name}
                           </h2>
-                          <span className="font-mono text-[11px] text-muted-foreground">
-                            {sectionDone}/{section.habits.length}
-                          </span>
                         </header>
                         {!section.collapsed && (
                           <ul className="divide-y divide-grid-line">
@@ -800,16 +766,14 @@ function Index() {
                                     className="flex min-h-[44px] w-full items-center gap-2.5 px-3 py-2 text-left transition-colors active:bg-secondary"
                                   >
                                     <span
-                                      className={`flex size-6 shrink-0 items-center justify-center rounded-md border transition-colors ${done
+                                      className={`flex size-6 shrink-0 items-center justify-center rounded-md border-2 transition-colors ${done
                                         ? `${habitColorClass[habit.color]} border-transparent text-white`
-                                        : "border-border bg-background text-transparent"
+                                        : "bg-background text-transparent"
                                         }`}
+                                      style={done ? undefined : { borderColor: `var(--habit-${habit.color})` }}
                                     >
                                       <Check className="size-4" strokeWidth={3} />
                                     </span>
-                                    <span
-                                      className={`size-2.5 shrink-0 rounded-sm ${habitColorClass[habit.color]}`}
-                                    />
                                     <span
                                       className={`flex-1 text-[15px] ${done ? "text-muted-foreground line-through" : ""}`}
                                     >
@@ -889,8 +853,8 @@ function Index() {
               <div className="mt-4">
                 <MobileAddGroupRow onAdd={h.addSection} />
               </div>
-              <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                Tap to tick · Today only
+              <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+                Tap to tick · Rotate for grid
               </p>
             </div>
 
