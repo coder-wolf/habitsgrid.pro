@@ -773,9 +773,13 @@ function Index() {
                               <ChevronDown className="size-3.5" />
                             )}
                           </button>
-                          <h2 className="flex-1 truncate font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                          <button
+                            onClick={() => h.toggleSection(section.id)}
+                            aria-label={section.collapsed ? `Expand ${section.name}` : `Collapse ${section.name}`}
+                            className="min-w-0 flex-1 truncate text-left font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+                          >
                             {section.name}
-                          </h2>
+                          </button>
                         </header>
                         {!section.collapsed && (
                           <ul className="divide-y divide-grid-line">
