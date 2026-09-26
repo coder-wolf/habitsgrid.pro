@@ -166,7 +166,7 @@ export function OnboardingFlow({ onDemo, embedded }: { onDemo?: () => void; embe
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <span className="text-2xl font-bold tracking-tight text-foreground">$0.99</span>
+                  <span className="text-2xl font-bold tracking-tight text-foreground">$2.99</span>
                   <span className="block text-[10px] text-muted-foreground">/ month</span>
                 </div>
               </div>

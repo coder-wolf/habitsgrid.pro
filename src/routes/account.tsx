@@ -166,7 +166,7 @@ function AccountPage() {
             onClick={() => navigate({ to: "/onboarding" })}
             className="w-full rounded-xl bg-foreground py-3 text-[15px] font-semibold text-background transition-all active:scale-[0.98]"
           >
-            Upgrade to Pro — $0.99/mo
+            Upgrade to Pro — $2.99/mo
           </button>
         )}
 

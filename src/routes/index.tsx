@@ -923,7 +923,7 @@ function Index() {
                   onClick={() => setUpgradeOpen(true)}
                   className="ml-1 text-primary transition-colors hover:underline"
                 >
-                  Upgrade for $0.99/mo
+                  Upgrade for $2.99/mo
                 </button>
               )}
             </p>

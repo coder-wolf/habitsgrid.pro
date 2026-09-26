@@ -31,7 +31,7 @@ export function SeoFooter() {
                     habits, all themes, local storage (offline)
                   </li>
                   <li>
-                    <strong className="font-medium text-foreground">Pro $0.99/mo</strong> — cloud
+                    <strong className="font-medium text-foreground">Pro $2.99/mo</strong> — cloud
                     sync via Supabase, multi-device, backups (LemonSqueezy)
                   </li>
                 </ul>
@@ -49,7 +49,7 @@ export function SeoFooter() {
                 <dt className="font-medium text-foreground">Is HabitsGrid free?</dt>
                 <dd className="mt-1 text-muted-foreground">
                   Yes — unlimited habits and all features work locally for free. Pro adds cloud sync for
-                  $0.99/mo.
+                  $2.99/mo.
                 </dd>
               </div>
               <div>
@@ -86,7 +86,7 @@ export function SeoFooter() {
                 name: "Is HabitsGrid free?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Yes — unlimited habits and all features work locally for free. Pro adds cloud sync for $0.99/mo via LemonSqueezy.",
+                  text: "Yes — unlimited habits and all features work locally for free. Pro adds cloud sync for $2.99/mo via LemonSqueezy.",
                 },
               },
               {
