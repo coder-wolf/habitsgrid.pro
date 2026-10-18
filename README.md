@@ -213,6 +213,3 @@ vercel --prod
 
 ---
 
-## License
-
-Private — not for redistribution.
