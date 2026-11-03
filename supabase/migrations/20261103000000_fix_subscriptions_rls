@@ -1,0 +1,2 @@
+-- Drop the insecure policy that defaults to PUBLIC role
+DROP POLICY IF EXISTS "Service role can manage subscriptions" ON subscriptions;
